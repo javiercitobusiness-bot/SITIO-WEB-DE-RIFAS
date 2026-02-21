@@ -706,6 +706,36 @@ async def get_past_events():
         logger.error(f"Error getting past events: {str(e)}")
         return {"events": []}
 
+# Site Settings endpoints
+@api_router.get("/admin/settings")
+async def get_site_settings(request: Request):
+    await get_current_admin(request)
+    
+    try:
+        settings = await db.site_settings.find_one({}, {"_id": 0})
+        return {"settings": settings}
+    except Exception as e:
+        logger.error(f"Error getting settings: {str(e)}")
+        return {"settings": None}
+
+@api_router.post("/admin/settings")
+async def save_site_settings(request: Request):
+    await get_current_admin(request)
+    
+    try:
+        body = await request.json()
+        
+        await db.site_settings.update_one(
+            {},
+            {"$set": body},
+            upsert=True
+        )
+        
+        return {"message": "Configuración guardada exitosamente"}
+    except Exception as e:
+        logger.error(f"Error saving settings: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error guardando configuración")
+
 # Include the router
 app.include_router(api_router)
 
