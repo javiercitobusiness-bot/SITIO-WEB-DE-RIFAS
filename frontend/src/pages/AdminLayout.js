@@ -1503,6 +1503,7 @@ export default function AdminLayout() {
           <Route path="customers" element={<CustomersView />} />
           <Route path="payments" element={<PaymentGatewaysView />} />
           <Route path="settings" element={<SiteSettingsView />} />
+          <Route path="security" element={<SecuritySettingsView />} />
         </Routes>
       </main>
     </div>
