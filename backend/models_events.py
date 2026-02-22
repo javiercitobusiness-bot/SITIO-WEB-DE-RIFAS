@@ -98,9 +98,28 @@ EVENT_TEMPLATES = {
         description="Venta de diamantes enumerados con premios en efectivo",
         icon="💎",
         default_prizes=[
-            EventPrize(name="Premio Principal", amount=100000000, description="Gran premio en efectivo"),
-            EventPrize(name="Repechaje", amount=50000000, description="Segundo premio"),
-            EventPrize(name="Premios Diarios", amount=5000000, description="8 premios diarios")
+            EventPrize(name="Premio Principal", amount=100000000, description="Gran premio - Lotería de Medellín", prize_type="main"),
+            EventPrize(name="Repechaje", amount=50000000, description="Número inverso del ganador", prize_type="repechaje"),
+            EventPrize(name="Premio Diario Derecho", amount=1500000, description="Número derecho diario", prize_type="daily"),
+            EventPrize(name="Premio Diario Inverso", amount=1500000, description="Número inverso diario", prize_type="daily_inverse")
+        ],
+        default_plans=[
+            EventPlan(id="basico", name="Plan Básico", price=20000, numbers_count=40, description="40 números"),
+            EventPlan(id="medio", name="Plan Medio", price=50000, numbers_count=100, description="100 números"),
+            EventPlan(id="premium", name="Plan Premium", price=100000, numbers_count=200, description="200 números")
+        ],
+        default_total_numbers=1000000
+    ),
+    "estrellas": EventTemplate(
+        id="estrellas",
+        name="Dinámica de Estrellas",
+        description="Venta de estrellas enumeradas con premios en efectivo",
+        icon="⭐",
+        default_prizes=[
+            EventPrize(name="Premio Principal", amount=100000000, description="Gran premio en efectivo", prize_type="main"),
+            EventPrize(name="Repechaje", amount=50000000, description="Número inverso del ganador", prize_type="repechaje"),
+            EventPrize(name="Premio Diario Derecho", amount=1500000, description="Número derecho diario", prize_type="daily"),
+            EventPrize(name="Premio Diario Inverso", amount=1500000, description="Número inverso diario", prize_type="daily_inverse")
         ],
         default_plans=[
             EventPlan(id="basico", name="Plan Básico", price=20000, numbers_count=40, description="40 números"),
@@ -115,9 +134,9 @@ EVENT_TEMPLATES = {
         description="Rifa de motocicleta con números de la suerte",
         icon="🏍️",
         default_prizes=[
-            EventPrize(name="Moto 0KM", amount=15000000, description="Motocicleta nueva"),
-            EventPrize(name="Segundo Premio", amount=5000000, description="Premio en efectivo"),
-            EventPrize(name="Tercer Premio", amount=2000000, description="Premio en efectivo")
+            EventPrize(name="Moto 0KM", amount=15000000, description="Motocicleta nueva", prize_type="main"),
+            EventPrize(name="Segundo Premio", amount=5000000, description="Premio en efectivo", prize_type="main"),
+            EventPrize(name="Tercer Premio", amount=2000000, description="Premio en efectivo", prize_type="main")
         ],
         default_plans=[
             EventPlan(id="basico", name="Plan Básico", price=10000, numbers_count=5, description="5 números"),
@@ -132,9 +151,9 @@ EVENT_TEMPLATES = {
         description="Rifa de automóvil con números de la suerte",
         icon="🚗",
         default_prizes=[
-            EventPrize(name="Carro 0KM", amount=80000000, description="Automóvil nuevo"),
-            EventPrize(name="Segundo Premio", amount=20000000, description="Premio en efectivo"),
-            EventPrize(name="Tercer Premio", amount=10000000, description="Premio en efectivo")
+            EventPrize(name="Carro 0KM", amount=80000000, description="Automóvil nuevo", prize_type="main"),
+            EventPrize(name="Segundo Premio", amount=20000000, description="Premio en efectivo", prize_type="main"),
+            EventPrize(name="Tercer Premio", amount=10000000, description="Premio en efectivo", prize_type="main")
         ],
         default_plans=[
             EventPlan(id="basico", name="Plan Básico", price=50000, numbers_count=10, description="10 números"),
@@ -142,39 +161,5 @@ EVENT_TEMPLATES = {
             EventPlan(id="premium", name="Plan Premium", price=200000, numbers_count=60, description="60 números")
         ],
         default_total_numbers=50000
-    ),
-    "tecnologia": EventTemplate(
-        id="tecnologia",
-        name="Pack Tecnológico",
-        description="Gana iPhone, MacBook y más",
-        icon="📱",
-        default_prizes=[
-            EventPrize(name="iPhone + MacBook", amount=12000000, description="Pack Apple completo"),
-            EventPrize(name="PlayStation 5", amount=3000000, description="Consola de videojuegos"),
-            EventPrize(name="AirPods Pro", amount=1500000, description="Audífonos inalámbricos")
-        ],
-        default_plans=[
-            EventPlan(id="basico", name="Plan Básico", price=15000, numbers_count=10, description="10 números"),
-            EventPlan(id="medio", name="Plan Medio", price=35000, numbers_count=30, description="30 números"),
-            EventPlan(id="premium", name="Plan Premium", price=70000, numbers_count=70, description="70 números")
-        ],
-        default_total_numbers=20000
-    ),
-    "viaje": EventTemplate(
-        id="viaje",
-        name="Viaje Todo Incluido",
-        description="Gana un viaje con todo pago",
-        icon="✈️",
-        default_prizes=[
-            EventPrize(name="Viaje a Cancún", amount=15000000, description="7 días todo incluido para 2"),
-            EventPrize(name="Viaje Nacional", amount=5000000, description="Fin de semana en hotel 5 estrellas"),
-            EventPrize(name="Bono de Viaje", amount=2000000, description="Para usar en cualquier destino")
-        ],
-        default_plans=[
-            EventPlan(id="basico", name="Plan Básico", price=20000, numbers_count=10, description="10 números"),
-            EventPlan(id="medio", name="Plan Medio", price=45000, numbers_count=30, description="30 números"),
-            EventPlan(id="premium", name="Plan Premium", price=90000, numbers_count=70, description="70 números")
-        ],
-        default_total_numbers=15000
     )
 }
