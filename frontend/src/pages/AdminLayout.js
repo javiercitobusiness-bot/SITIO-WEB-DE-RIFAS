@@ -376,11 +376,22 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
     description: '',
     template_id: '',
     total_numbers: 1000000,
+    price_per_number: 500,
     start_date: '',
     end_date: '',
-    image_url: ''
+    image_url: '',
+    symbol_type: 'diamond',
+    lottery_name: 'Lotería de Medellín'
   });
   const [loading, setLoading] = useState(false);
+
+  const totalNumbersOptions = [
+    { value: 100, label: '100 números' },
+    { value: 1000, label: '1,000 números' },
+    { value: 10000, label: '10,000 números' },
+    { value: 100000, label: '100,000 números' },
+    { value: 1000000, label: '1,000,000 números' }
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -413,10 +424,10 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Plantilla (opcional)</Label>
+            <Label>Plantilla</Label>
             <Select 
               value={formData.template_id} 
-              onValueChange={(value) => setFormData({...formData, template_id: value})}
+              onValueChange={(value) => setFormData({...formData, template_id: value, symbol_type: value === 'estrellas' ? 'star' : 'diamond'})}
             >
               <SelectTrigger className="bg-slate-800 border-slate-700">
                 <SelectValue placeholder="Selecciona una plantilla" />
@@ -475,16 +486,63 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Total de números</Label>
-            <Input
-              type="number"
-              value={formData.total_numbers}
-              onChange={(e) => setFormData({...formData, total_numbers: parseInt(e.target.value)})}
-              className="bg-slate-800 border-slate-700"
-              min="1000"
-              max="10000000"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Total de números</Label>
+              <Select 
+                value={formData.total_numbers.toString()} 
+                onValueChange={(value) => setFormData({...formData, total_numbers: parseInt(value)})}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  {totalNumbersOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value.toString()}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Precio por número (COP)</Label>
+              <Input
+                type="number"
+                value={formData.price_per_number}
+                onChange={(e) => setFormData({...formData, price_per_number: parseInt(e.target.value)})}
+                className="bg-slate-800 border-slate-700"
+                min="100"
+                max="10000"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Tipo de símbolo</Label>
+              <Select 
+                value={formData.symbol_type} 
+                onValueChange={(value) => setFormData({...formData, symbol_type: value})}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="diamond">💎 Diamantes</SelectItem>
+                  <SelectItem value="star">⭐ Estrellas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Lotería</Label>
+              <Input
+                value={formData.lottery_name}
+                onChange={(e) => setFormData({...formData, lottery_name: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="Lotería de Medellín"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
