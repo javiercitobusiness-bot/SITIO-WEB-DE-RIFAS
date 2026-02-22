@@ -325,7 +325,17 @@ async def admin_login(request: Request):
         username = body.get("username", "")
         password = body.get("password", "")
         
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        # Check against database first, then fallback to env vars
+        admin_config = await db.admin_config.find_one({"type": "credentials"})
+        
+        if admin_config:
+            stored_username = admin_config.get("username", ADMIN_USERNAME)
+            stored_password = admin_config.get("password", ADMIN_PASSWORD)
+        else:
+            stored_username = ADMIN_USERNAME
+            stored_password = ADMIN_PASSWORD
+        
+        if username == stored_username and password == stored_password:
             token = create_admin_token(username)
             return {"token": token, "message": "Login exitoso"}
         else:
@@ -335,6 +345,135 @@ async def admin_login(request: Request):
     except Exception as e:
         logger.error(f"Error in admin login: {str(e)}")
         raise HTTPException(status_code=500, detail="Error en login")
+
+@api_router.post("/admin/change-password")
+async def change_admin_password(request: Request):
+    await get_current_admin(request)
+    
+    try:
+        body = await request.json()
+        current_password = body.get("current_password", "")
+        new_password = body.get("new_password", "")
+        
+        if len(new_password) < 8:
+            raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 8 caracteres")
+        
+        # Get current password
+        admin_config = await db.admin_config.find_one({"type": "credentials"})
+        stored_password = admin_config.get("password", ADMIN_PASSWORD) if admin_config else ADMIN_PASSWORD
+        
+        if current_password != stored_password:
+            raise HTTPException(status_code=401, detail="Contraseña actual incorrecta")
+        
+        # Update password in database
+        await db.admin_config.update_one(
+            {"type": "credentials"},
+            {"$set": {
+                "type": "credentials",
+                "username": ADMIN_USERNAME,
+                "password": new_password,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+        
+        return {"message": "Contraseña actualizada exitosamente"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error changing password: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error al cambiar contraseña")
+
+@api_router.post("/admin/request-password-reset")
+async def request_password_reset(request: Request):
+    try:
+        body = await request.json()
+        email = body.get("email", "")
+        
+        # Only allow recovery to the registered email
+        if email.lower() != ADMIN_RECOVERY_EMAIL.lower():
+            # Don't reveal if email is wrong for security
+            return {"message": "Si el correo es válido, recibirás instrucciones para restablecer tu contraseña"}
+        
+        # Generate reset token
+        reset_token = str(uuid.uuid4())
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        
+        # Store reset token
+        await db.admin_config.update_one(
+            {"type": "password_reset"},
+            {"$set": {
+                "type": "password_reset",
+                "token": reset_token,
+                "expires_at": expires_at.isoformat(),
+                "used": False
+            }},
+            upsert=True
+        )
+        
+        # Send email with reset link
+        reset_link = f"https://dinamicadiamantes.com/admin/reset-password?token={reset_token}"
+        
+        email_sent = await email_service.send_password_reset_email(
+            email=ADMIN_RECOVERY_EMAIL,
+            reset_link=reset_link
+        )
+        
+        if email_sent:
+            logger.info(f"Password reset email sent to {ADMIN_RECOVERY_EMAIL}")
+        else:
+            logger.warning(f"Failed to send password reset email")
+        
+        return {"message": "Si el correo es válido, recibirás instrucciones para restablecer tu contraseña"}
+    except Exception as e:
+        logger.error(f"Error requesting password reset: {str(e)}")
+        return {"message": "Si el correo es válido, recibirás instrucciones para restablecer tu contraseña"}
+
+@api_router.post("/admin/reset-password")
+async def reset_password(request: Request):
+    try:
+        body = await request.json()
+        token = body.get("token", "")
+        new_password = body.get("new_password", "")
+        
+        if len(new_password) < 8:
+            raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 8 caracteres")
+        
+        # Verify token
+        reset_config = await db.admin_config.find_one({"type": "password_reset", "token": token, "used": False})
+        
+        if not reset_config:
+            raise HTTPException(status_code=400, detail="Token inválido o expirado")
+        
+        # Check expiration
+        expires_at = datetime.fromisoformat(reset_config["expires_at"].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) > expires_at:
+            raise HTTPException(status_code=400, detail="Token expirado")
+        
+        # Update password
+        await db.admin_config.update_one(
+            {"type": "credentials"},
+            {"$set": {
+                "type": "credentials",
+                "username": ADMIN_USERNAME,
+                "password": new_password,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+        
+        # Mark token as used
+        await db.admin_config.update_one(
+            {"type": "password_reset", "token": token},
+            {"$set": {"used": True}}
+        )
+        
+        return {"message": "Contraseña restablecida exitosamente"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error resetting password: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error al restablecer contraseña")
 
 @api_router.get("/admin/stats")
 async def get_admin_stats(request: Request):
