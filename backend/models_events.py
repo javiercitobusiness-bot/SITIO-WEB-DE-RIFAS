@@ -12,11 +12,16 @@ class EventStatus(str, Enum):
     PAUSED = "paused"
     FINISHED = "finished"
 
+class SymbolType(str, Enum):
+    DIAMOND = "diamond"
+    STAR = "star"
+
 class EventPrize(BaseModel):
     """Premio de un evento"""
     name: str
     amount: int
     description: str
+    prize_type: str = "main"  # main, daily, daily_inverse, repechaje
 
 class EventPlan(BaseModel):
     """Plan de compra para un evento"""
@@ -43,10 +48,13 @@ class EventCreate(BaseModel):
     template_id: Optional[str] = None
     prizes: List[EventPrize] = []
     plans: List[EventPlan] = []
-    total_numbers: int = Field(default=1000000, ge=1000, le=10000000)
+    total_numbers: int = Field(default=1000000, ge=100, le=10000000)
+    price_per_number: int = Field(default=500, ge=100, le=10000)
     start_date: datetime
     end_date: datetime
     image_url: Optional[str] = None
+    symbol_type: SymbolType = SymbolType.DIAMOND
+    lottery_name: Optional[str] = None
 
 class EventUpdate(BaseModel):
     """Actualizar evento"""
@@ -58,6 +66,10 @@ class EventUpdate(BaseModel):
     end_date: Optional[datetime] = None
     status: Optional[EventStatus] = None
     image_url: Optional[str] = None
+    price_per_number: Optional[int] = None
+    total_numbers: Optional[int] = None
+    symbol_type: Optional[SymbolType] = None
+    lottery_name: Optional[str] = None
 
 class Event(BaseModel):
     """Evento/Dinámica completa"""
@@ -68,10 +80,13 @@ class Event(BaseModel):
     plans: List[EventPlan]
     total_numbers: int
     sold_numbers: int = 0
+    price_per_number: int = 500
     start_date: datetime
     end_date: datetime
     status: EventStatus = EventStatus.DRAFT
     image_url: Optional[str] = None
+    symbol_type: SymbolType = SymbolType.DIAMOND
+    lottery_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
