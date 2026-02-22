@@ -4,8 +4,9 @@ import { Trophy, Gift, Calendar } from 'lucide-react';
 
 export default function PrizeInfo({ event }) {
   const defaultPrizes = [
-    { name: 'Premio Principal', amount: 100000000, description: 'Gran premio en efectivo' },
-    { name: 'Repechaje', amount: 50000000, description: 'Segundo premio' }
+    { name: 'Premio Principal', amount: 100000000, description: 'Gran premio - Lotería de Medellín' },
+    { name: 'Repechaje', amount: 50000000, description: 'Número inverso del ganador' },
+    { name: 'Premios Diarios', amount: 3000000, description: '8 días - $1.5M derecho + $1.5M inverso', isDaily: true }
   ];
 
   const prizes = event?.prizes || defaultPrizes;
@@ -32,13 +33,15 @@ export default function PrizeInfo({ event }) {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {prizes.map((prize, index) => (
             <div 
               key={index}
               className={`relative p-6 rounded-2xl border ${
                 index === 0 
                   ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border-yellow-500/30' 
+                  : index === 2
+                  ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/10 border-green-500/30'
                   : 'bg-slate-900/50 border-slate-800'
               }`}
             >
@@ -49,13 +52,22 @@ export default function PrizeInfo({ event }) {
                   </span>
                 </div>
               )}
+              {prize.isDaily && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="px-3 py-1 bg-green-500 text-black text-xs font-bold rounded-full">
+                    8 DÍAS
+                  </span>
+                </div>
+              )}
               
               <div className="flex items-start gap-4">
                 <div className={`p-3 rounded-xl ${
-                  index === 0 ? 'bg-yellow-500/20' : 'bg-cyan-500/10'
+                  index === 0 ? 'bg-yellow-500/20' : index === 2 ? 'bg-green-500/20' : 'bg-cyan-500/10'
                 }`}>
                   {index === 0 ? (
                     <Trophy className="w-6 h-6 text-yellow-400" />
+                  ) : index === 2 ? (
+                    <Calendar className="w-6 h-6 text-green-400" />
                   ) : (
                     <Gift className="w-6 h-6 text-cyan-400" />
                   )}
@@ -66,9 +78,10 @@ export default function PrizeInfo({ event }) {
                     {prize.name}
                   </h3>
                   <p className={`text-2xl font-bold ${
-                    index === 0 ? 'text-yellow-400' : 'text-cyan-400'
+                    index === 0 ? 'text-yellow-400' : index === 2 ? 'text-green-400' : 'text-cyan-400'
                   }`}>
                     {formatCurrency(prize.amount)}
+                    {prize.isDaily && <span className="text-sm font-normal text-white/50"> /día</span>}
                   </p>
                   <p className="text-white/50 text-sm mt-2">
                     {prize.description}
