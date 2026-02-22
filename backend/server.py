@@ -685,7 +685,10 @@ async def get_public_active_event():
                 "sold_numbers": event.get("sold_numbers"),
                 "start_date": event.get("start_date"),
                 "end_date": event.get("end_date"),
-                "image_url": event.get("image_url")
+                "image_url": event.get("image_url"),
+                "price_per_number": event.get("price_per_number", 500),
+                "symbol_type": event.get("symbol_type", "diamond"),
+                "lottery_name": event.get("lottery_name")
             }
         }
     except Exception as e:
