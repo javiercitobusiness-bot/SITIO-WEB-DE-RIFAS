@@ -3,9 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import Diamond from './Diamond';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles, Star } from 'lucide-react';
 
-export default function PricingPlans({ plans, onSelectPlan }) {
+export default function PricingPlans({ plans, onSelectPlan, symbolType = 'diamond' }) {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -14,6 +14,9 @@ export default function PricingPlans({ plans, onSelectPlan }) {
       maximumFractionDigits: 0
     }).format(amount);
   };
+
+  const SymbolIcon = symbolType === 'star' ? Star : Diamond;
+  const symbolName = symbolType === 'star' ? 'estrellas' : 'diamantes';
 
   const planStyles = {
     basico: {
