@@ -69,7 +69,7 @@ export default function PricingPlans({ plans, onSelectPlan, symbolType = 'diamon
                 
                 <CardHeader className="text-center pb-2">
                   <div className={`w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center`}>
-                    <Diamond className="w-8 h-8 text-white" />
+                    <SymbolIcon className="w-8 h-8 text-white" />
                   </div>
                   <CardTitle className="text-xl text-white">{plan.name}</CardTitle>
                   <CardDescription className="text-white/50">
@@ -88,7 +88,7 @@ export default function PricingPlans({ plans, onSelectPlan, symbolType = 'diamon
                   <ul className="space-y-3 mb-6 text-left">
                     <li className="flex items-center gap-2 text-white/70">
                       <Check className="w-4 h-4 text-green-400" />
-                      <span>{plan.diamonds_count} diamantes numerados</span>
+                      <span>{plan.diamonds_count || plan.numbers_count} {symbolName} numerados</span>
                     </li>
                     <li className="flex items-center gap-2 text-white/70">
                       <Check className="w-4 h-4 text-green-400" />
