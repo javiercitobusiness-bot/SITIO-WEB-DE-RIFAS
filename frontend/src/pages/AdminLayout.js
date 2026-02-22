@@ -579,6 +579,21 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
 
+  const totalNumbersOptions = [
+    { value: 100, label: '100 números' },
+    { value: 1000, label: '1,000 números' },
+    { value: 10000, label: '10,000 números' },
+    { value: 100000, label: '100,000 números' },
+    { value: 1000000, label: '1,000,000 números' }
+  ];
+
+  const prizeTypes = [
+    { value: 'main', label: 'Premio Principal' },
+    { value: 'repechaje', label: 'Repechaje' },
+    { value: 'daily', label: 'Premio Diario (Derecho)' },
+    { value: 'daily_inverse', label: 'Premio Diario (Inverso)' }
+  ];
+
   useEffect(() => {
     if (event) {
       setFormData({
@@ -587,7 +602,11 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
         status: event.status || 'draft',
         image_url: event.image_url || '',
         prizes: event.prizes || [],
-        plans: event.plans || []
+        plans: event.plans || [],
+        price_per_number: event.price_per_number || 500,
+        total_numbers: event.total_numbers || 1000000,
+        symbol_type: event.symbol_type || 'diamond',
+        lottery_name: event.lottery_name || ''
       });
     }
   }, [event]);
@@ -608,7 +627,7 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
   const addPrize = () => {
     setFormData({
       ...formData,
-      prizes: [...(formData.prizes || []), { name: '', amount: 0, description: '' }]
+      prizes: [...(formData.prizes || []), { name: '', amount: 0, description: '', prize_type: 'main' }]
     });
   };
 
@@ -658,6 +677,7 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
           <TabsList className="bg-slate-800 w-full">
             <TabsTrigger value="general" className="flex-1">General</TabsTrigger>
+            <TabsTrigger value="config" className="flex-1">Configuración</TabsTrigger>
             <TabsTrigger value="prizes" className="flex-1">Premios</TabsTrigger>
             <TabsTrigger value="plans" className="flex-1">Planes</TabsTrigger>
           </TabsList>
@@ -715,6 +735,76 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                   <img src={formData.image_url} alt="Preview" className="w-full max-h-48 object-cover rounded-lg mt-2" />
                 )}
               </div>
+            </TabsContent>
+
+            <TabsContent value="config" className="space-y-4 m-0">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Total de números</Label>
+                  <Select 
+                    value={formData.total_numbers?.toString()} 
+                    onValueChange={(value) => setFormData({...formData, total_numbers: parseInt(value)})}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {totalNumbersOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value.toString()}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Precio por número (COP)</Label>
+                  <Input
+                    type="number"
+                    value={formData.price_per_number}
+                    onChange={(e) => setFormData({...formData, price_per_number: parseInt(e.target.value)})}
+                    className="bg-slate-800 border-slate-700"
+                    min="100"
+                    max="10000"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tipo de símbolo</Label>
+                  <Select 
+                    value={formData.symbol_type} 
+                    onValueChange={(value) => setFormData({...formData, symbol_type: value})}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="diamond">💎 Diamantes</SelectItem>
+                      <SelectItem value="star">⭐ Estrellas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Lotería para sorteo</Label>
+                  <Input
+                    value={formData.lottery_name}
+                    onChange={(e) => setFormData({...formData, lottery_name: e.target.value})}
+                    className="bg-slate-800 border-slate-700"
+                    placeholder="Lotería de Medellín"
+                  />
+                </div>
+              </div>
+
+              <Card className="bg-slate-800/30 border-slate-700">
+                <CardContent className="p-4">
+                  <p className="text-sm text-white/60">
+                    <strong>Cálculo automático:</strong> Con {formData.total_numbers?.toLocaleString()} números a ${formData.price_per_number?.toLocaleString()} COP cada uno, 
+                    el total potencial de ventas es: <span className="text-green-400 font-semibold">${((formData.total_numbers || 0) * (formData.price_per_number || 0)).toLocaleString()} COP</span>
+                  </p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="prizes" className="space-y-4 m-0">
