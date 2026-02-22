@@ -695,12 +695,47 @@ async def get_public_active_event():
         logger.error(f"Error getting active event: {str(e)}")
         return {"event": None}
 
+@api_router.get("/events/available")
+async def get_available_events():
+    """Get all active events for public display"""
+    try:
+        cursor = db.events.find(
+            {"status": "active"},
+            {"_id": 0}
+        ).sort("start_date", 1)
+        
+        events = await cursor.to_list(20)
+        
+        # Format events for frontend
+        formatted_events = []
+        for event in events:
+            formatted_events.append({
+                "id": event.get("event_id"),
+                "name": event.get("name"),
+                "description": event.get("description"),
+                "prizes": event.get("prizes", []),
+                "plans": event.get("plans", []),
+                "total_numbers": event.get("total_numbers"),
+                "sold_numbers": event.get("sold_numbers", 0),
+                "start_date": event.get("start_date"),
+                "end_date": event.get("end_date"),
+                "image_url": event.get("image_url"),
+                "price_per_number": event.get("price_per_number", 500),
+                "symbol_type": event.get("symbol_type", "diamond"),
+                "lottery_name": event.get("lottery_name")
+            })
+        
+        return {"events": formatted_events}
+    except Exception as e:
+        logger.error(f"Error getting available events: {str(e)}")
+        return {"events": []}
+
 @api_router.get("/events/past")
 async def get_past_events():
     try:
         cursor = db.events.find(
-            {"status": {"$in": ["finished", "paused"]}},
-            {"_id": 0, "event_id": 1, "name": 1, "description": 1, "end_date": 1, "sold_numbers": 1}
+            {"status": {"$in": ["finished", "paused"]}, "show_in_history": {"$ne": False}},
+            {"_id": 0, "event_id": 1, "name": 1, "description": 1, "end_date": 1, "sold_numbers": 1, "image_url": 1}
         ).sort("end_date", -1).limit(10)
         
         events = await cursor.to_list(10)
