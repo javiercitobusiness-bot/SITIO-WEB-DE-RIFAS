@@ -824,15 +824,31 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
-                    <Input
-                      placeholder="Nombre del premio"
-                      value={prize.name}
-                      onChange={(e) => updatePrize(index, 'name', e.target.value)}
-                      className="bg-slate-900 border-slate-700"
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Nombre del premio"
+                        value={prize.name}
+                        onChange={(e) => updatePrize(index, 'name', e.target.value)}
+                        className="bg-slate-900 border-slate-700"
+                      />
+                      <Select 
+                        value={prize.prize_type || 'main'} 
+                        onValueChange={(value) => updatePrize(index, 'prize_type', value)}
+                      >
+                        <SelectTrigger className="bg-slate-900 border-slate-700">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700">
+                          <SelectItem value="main">Principal</SelectItem>
+                          <SelectItem value="repechaje">Repechaje</SelectItem>
+                          <SelectItem value="daily">Diario (Derecho)</SelectItem>
+                          <SelectItem value="daily_inverse">Diario (Inverso)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <Input
                       type="number"
-                      placeholder="Valor"
+                      placeholder="Valor en COP"
                       value={prize.amount}
                       onChange={(e) => updatePrize(index, 'amount', parseInt(e.target.value) || 0)}
                       className="bg-slate-900 border-slate-700"
