@@ -1210,6 +1210,139 @@ function SiteSettingsView() {
   );
 }
 
+// Security Settings View - Change Password
+function SecuritySettingsView() {
+  const [passwords, setPasswords] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (passwords.new_password !== passwords.confirm_password) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
+    
+    if (passwords.new_password.length < 8) {
+      toast.error('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await api.post('/api/admin/change-password', {
+        current_password: passwords.current_password,
+        new_password: passwords.new_password
+      });
+      toast.success('Contraseña actualizada exitosamente');
+      setPasswords({ current_password: '', new_password: '', confirm_password: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al cambiar contraseña');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-white">Seguridad</h2>
+
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            Cambiar Contraseña
+          </CardTitle>
+          <CardDescription className="text-white/60">
+            Actualiza la contraseña de tu cuenta de administrador
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Contraseña actual</Label>
+            <div className="relative">
+              <Input
+                type={showPasswords ? 'text' : 'password'}
+                value={passwords.current_password}
+                onChange={(e) => setPasswords({...passwords, current_password: e.target.value})}
+                className="bg-slate-900 border-slate-700 pr-10"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Nueva contraseña</Label>
+            <Input
+              type={showPasswords ? 'text' : 'password'}
+              value={passwords.new_password}
+              onChange={(e) => setPasswords({...passwords, new_password: e.target.value})}
+              className="bg-slate-900 border-slate-700"
+              placeholder="Mínimo 8 caracteres"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Confirmar nueva contraseña</Label>
+            <Input
+              type={showPasswords ? 'text' : 'password'}
+              value={passwords.confirm_password}
+              onChange={(e) => setPasswords({...passwords, confirm_password: e.target.value})}
+              className="bg-slate-900 border-slate-700"
+              placeholder="Repite la contraseña"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="showPasswords"
+              checked={showPasswords}
+              onChange={(e) => setShowPasswords(e.target.checked)}
+              className="rounded"
+            />
+            <Label htmlFor="showPasswords" className="text-sm text-white/60 cursor-pointer">
+              Mostrar contraseñas
+            </Label>
+          </div>
+
+          <Button 
+            onClick={handleChangePassword} 
+            className="w-full bg-gradient-to-r from-cyan-500 to-purple-500"
+            disabled={loading || !passwords.current_password || !passwords.new_password}
+          >
+            {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
+            Cambiar Contraseña
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Mail className="w-5 h-5" />
+            Recuperación de Contraseña
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-white/60 text-sm">
+            En caso de olvidar tu contraseña, podrás recuperarla enviando un correo de restablecimiento a:
+          </p>
+          <p className="text-cyan-400 font-semibold mt-2">
+            javiercito.business@gmail.com
+          </p>
+          <p className="text-white/40 text-xs mt-4">
+            Por seguridad, este correo no puede ser cambiado desde el panel.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // Payment Gateways View
 function PaymentGatewaysView() {
   const [gateways, setGateways] = useState([]);
