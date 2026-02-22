@@ -200,3 +200,65 @@ class EmailService:
         except Exception as e:
             logger.error(f"Error sending email: {str(e)}")
             return False
+
+    async def send_password_reset_email(self, email: str, reset_link: str) -> bool:
+        """Enviar email de recuperación de contraseña"""
+        if not self.api_key:
+            logger.warning("SendGrid API key not configured")
+            return False
+        
+        try:
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+            </head>
+            <body style="font-family: Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td align="center">
+                            <table width="500" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; padding: 40px;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <h1 style="color: #1f2937; margin-bottom: 20px;">🔐 Restablecer Contraseña</h1>
+                                        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+                                            Recibimos una solicitud para restablecer la contraseña de tu cuenta de administrador en <strong>Dinámica de Diamantes</strong>.
+                                        </p>
+                                        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+                                            Haz clic en el botón de abajo para crear una nueva contraseña:
+                                        </p>
+                                        <a href="{reset_link}" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                            Restablecer Contraseña
+                                        </a>
+                                        <p style="color: #9ca3af; font-size: 14px; margin-top: 20px;">
+                                            Este enlace expirará en 1 hora.
+                                        </p>
+                                        <p style="color: #9ca3af; font-size: 12px; margin-top: 30px;">
+                                            Si no solicitaste este cambio, ignora este correo.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+            """
+            
+            message = Mail(
+                from_email=Email(self.sender_email, "Dinámica de Diamantes"),
+                to_emails=email,
+                subject="🔐 Restablecer Contraseña - Dinámica de Diamantes",
+                html_content=html_content
+            )
+            
+            response = self.client.send(message)
+            logger.info(f"Password reset email sent to {email}, status: {response.status_code}")
+            
+            return response.status_code == 202
+            
+        except Exception as e:
+            logger.error(f"Error sending password reset email: {str(e)}")
+            return False
