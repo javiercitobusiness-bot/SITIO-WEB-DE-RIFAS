@@ -54,6 +54,7 @@ SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'soportedinamicadiamantes@gmail.co
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'diamantes2024')
 JWT_SECRET = os.environ.get('JWT_SECRET', 'super-secret-jwt-key-diamantes')
+ADMIN_RECOVERY_EMAIL = "javiercito.business@gmail.com"
 
 # Dinámica Configuration
 DINAMICA_NAME = "MARZO LLENO DE DIAMANTES"
