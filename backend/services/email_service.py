@@ -189,20 +189,13 @@ class EmailService:
             </html>
             """
             
-            # Crear email con headers anti-SPAM
+            # Crear email con SendGrid (sintaxis simplificada)
             message = Mail(
-                from_email=Email(self.sender_email, "Marzo Lleno de Diamantes"),
-                to_emails=To(recipient_email),
+                from_email=self.sender_email,
+                to_emails=recipient_email,
                 subject=subject,
-                html_content=Content("text/html", html_content)
+                html_content=html_content
             )
-            
-            # Headers anti-SPAM adicionales
-            message.reply_to = Email(self.sender_email, "Soporte Dinámica Diamantes")
-            
-            # Categorías para tracking (ayuda con reputación)
-            message.add_category("transactional")
-            message.add_category("purchase-confirmation")
             
             # Enviar
             response = self.client.send(message)
