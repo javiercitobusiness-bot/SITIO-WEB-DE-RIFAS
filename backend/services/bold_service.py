@@ -3,6 +3,7 @@ Servicio para integración con BOLD Payment Gateway
 """
 import httpx
 import logging
+import os
 from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
@@ -13,6 +14,8 @@ class BOLDPaymentService:
     def __init__(self, api_key: str, base_url: str):
         self.api_key = api_key
         self.base_url = base_url
+        # URL de redirección después del pago
+        self.redirect_url = os.environ.get('PAYMENT_REDIRECT_URL', 'https://www.dinamicadiamantes.com/compra-exitosa')
         
     def _get_headers(self) -> Dict[str, str]:
         """Headers con autenticación"""
@@ -67,11 +70,14 @@ class BOLDPaymentService:
                 "payer_email": customer_email,
                 "payment_methods": ["CREDIT_CARD", "PSE", "NEQUI"],
                 "reference": reference,
-                "expiration_date": expiration_date
+                "expiration_date": expiration_date,
+                "redirect_url": self.redirect_url
             }
             
             if customer_name:
                 payload["metadata"] = {"customer_name": customer_name}
+            
+            logger.info(f"Redirect URL configured: {self.redirect_url}")
             
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(url, json=payload, headers=headers)
