@@ -71,7 +71,7 @@ class BOLDPaymentService:
                 "payment_methods": ["CREDIT_CARD", "PSE", "NEQUI"],
                 "reference": reference,
                 "expiration_date": expiration_date,
-                "redirect_url": self.redirect_url
+                "callback_url": self.redirect_url
             }
             
             if customer_name:
