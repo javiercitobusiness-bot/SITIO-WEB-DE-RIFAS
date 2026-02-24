@@ -204,10 +204,6 @@ class EmailService:
             message.add_category("transactional")
             message.add_category("purchase-confirmation")
             
-            # Custom args para tracking interno
-            message.add_custom_arg("plan", plan_name)
-            message.add_custom_arg("diamonds_count", str(len(diamonds)))
-            
             # Enviar
             response = self.client.send(message)
             logger.info(f"Email sent to {recipient_email}, status: {response.status_code}")
