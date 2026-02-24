@@ -16,24 +16,41 @@ class EmailService:
         self.sender_email = sender_email
         self.client = SendGridAPIClient(api_key) if api_key else None
     
-    def _create_diamond_svg(self, number: str) -> str:
-        """Crear SVG de diamante con número"""
+    def _create_diamond_html(self, number: str) -> str:
+        """Crear diamante visual con número usando HTML/CSS puro (mejor compatibilidad con emails)"""
         return f"""
-        <svg width="80" height="80" viewBox="0 0 100 100" style="display: inline-block;">
-            <defs>
-                <linearGradient id="diamond-grad-{number}" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#48CAE4;stop-opacity:1" />
-                    <stop offset="50%" style="stop-color:#00B4D8;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#0096C7;stop-opacity:1" />
-                </linearGradient>
-            </defs>
-            <polygon points="50,5 85,35 50,95 15,35" fill="url(#diamond-grad-{number})" stroke="#023047" stroke-width="2"/>
-            <polygon points="50,5 65,20 50,35 35,20" fill="rgba(255,255,255,0.3)" stroke="#023047" stroke-width="0.5"/>
-            <polygon points="15,35 35,20 50,35 30,60" fill="rgba(0,150,199,0.6)" stroke="#023047" stroke-width="0.5"/>
-            <polygon points="85,35 65,20 50,35 70,60" fill="rgba(0,150,199,0.6)" stroke="#023047" stroke-width="0.5"/>
-            <line x1="50" y1="35" x2="50" y2="95" stroke="#023047" stroke-width="1" opacity="0.3"/>
-            <text x="50" y="50" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white" text-anchor="middle" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{number}</text>
-        </svg>
+        <div style="display: inline-block; width: 85px; height: 100px; margin: 5px; text-align: center; vertical-align: top;">
+            <div style="
+                width: 0;
+                height: 0;
+                border-left: 40px solid transparent;
+                border-right: 40px solid transparent;
+                border-bottom: 25px solid #0096C7;
+                margin: 0 auto;
+            "></div>
+            <div style="
+                width: 0;
+                height: 0;
+                border-left: 40px solid transparent;
+                border-right: 40px solid transparent;
+                border-top: 55px solid #00B4D8;
+                margin: 0 auto;
+                position: relative;
+            ">
+                <span style="
+                    position: absolute;
+                    top: -40px;
+                    left: -25px;
+                    width: 50px;
+                    font-family: Arial, sans-serif;
+                    font-size: 11px;
+                    font-weight: bold;
+                    color: white;
+                    text-align: center;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                ">{number}</span>
+            </div>
+        </div>
         """
     
     async def send_diamonds_email(
@@ -54,12 +71,12 @@ class EmailService:
             return True
         
         try:
-            # Crear grid de diamantes con SVG
+            # Crear grid de diamantes con HTML/CSS puro (mejor compatibilidad)
             diamonds_grid = ""
-            for i in range(0, len(diamonds), 6):
-                row_diamonds = diamonds[i:i+6]
-                row_html = " ".join([self._create_diamond_svg(d) for d in row_diamonds])
-                diamonds_grid += f'<div style="text-align: center; margin: 10px 0;">{row_html}</div>'
+            for i in range(0, len(diamonds), 5):
+                row_diamonds = diamonds[i:i+5]
+                row_html = "".join([self._create_diamond_html(d) for d in row_diamonds])
+                diamonds_grid += f'<div style="text-align: center; margin: 15px 0;">{row_html}</div>'
             
             # Subject optimizado anti-SPAM
             subject = f"Tus {len(diamonds)} Diamantes - Marzo Lleno de Diamantes"
