@@ -1076,6 +1076,9 @@ function PurchasesView() {
 function CustomersView() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerDiamonds, setCustomerDiamonds] = useState([]);
+  const [loadingDiamonds, setLoadingDiamonds] = useState(false);
 
   useEffect(() => {
     fetchCustomers();
@@ -1089,6 +1092,22 @@ function CustomersView() {
       toast.error('Error al cargar clientes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const viewDiamonds = async (email) => {
+    setLoadingDiamonds(true);
+    setSelectedCustomer(email);
+    try {
+      const response = await api.get(`/api/admin/diamonds/${encodeURIComponent(email)}`);
+      const assignments = response.data.assignments || [];
+      // Aplanar todos los diamantes
+      const allDiamonds = assignments.flatMap(a => a.diamonds || []);
+      setCustomerDiamonds(allDiamonds);
+    } catch (error) {
+      toast.error('Error al cargar diamantes');
+    } finally {
+      setLoadingDiamonds(false);
     }
   };
 
@@ -1118,12 +1137,43 @@ function CustomersView() {
                     <p className="text-sm text-white/60">{customer._id}</p>
                     {customer.phone && <p className="text-sm text-white/50">{customer.phone}</p>}
                   </div>
-                  <div className="text-right">
-                    <p className="text-cyan-400 font-semibold">{formatCurrency(customer.total_spent)}</p>
-                    <p className="text-sm text-white/60">{customer.total_diamonds} diamantes</p>
-                    <p className="text-xs text-white/50">{customer.total_purchases} compras</p>
+                  <div className="text-right flex items-center gap-4">
+                    <div>
+                      <p className="text-cyan-400 font-semibold">{formatCurrency(customer.total_spent)}</p>
+                      <p className="text-sm text-white/60">{customer.total_diamonds} diamantes</p>
+                      <p className="text-xs text-white/50">{customer.total_purchases} compras</p>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      onClick={() => viewDiamonds(customer._id)}
+                      className="bg-cyan-600 hover:bg-cyan-700"
+                    >
+                      Ver Números
+                    </Button>
                   </div>
                 </div>
+                
+                {/* Mostrar diamantes si este cliente está seleccionado */}
+                {selectedCustomer === customer._id && (
+                  <div className="mt-4 pt-4 border-t border-slate-700">
+                    {loadingDiamonds ? (
+                      <p className="text-white/50 text-sm">Cargando...</p>
+                    ) : customerDiamonds.length > 0 ? (
+                      <div>
+                        <p className="text-white/70 text-sm mb-2">Números asignados ({customerDiamonds.length}):</p>
+                        <div className="flex flex-wrap gap-2">
+                          {customerDiamonds.map((num, idx) => (
+                            <span key={idx} className="px-2 py-1 bg-cyan-500/20 text-cyan-400 rounded text-xs font-mono">
+                              {num}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-white/50 text-sm">Sin diamantes asignados</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))
