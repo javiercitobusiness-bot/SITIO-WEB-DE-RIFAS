@@ -14,10 +14,13 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
   const [formData, setFormData] = useState({
     customer_name: '',
     customer_email: '',
-    customer_phone: ''
+    customer_phone: '',
+    discount_code: ''
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [discountApplied, setDiscountApplied] = useState(null);
+  const [finalPrice, setFinalPrice] = useState(null);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-CO', {
@@ -26,6 +29,26 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
+  };
+
+  const validateDiscount = async () => {
+    if (!formData.discount_code) return;
+    try {
+      const response = await axios.post(`${API_URL}/api/validate-discount`, {
+        code: formData.discount_code
+      });
+      if (response.data.valid) {
+        setDiscountApplied(response.data.discount_percent);
+        setFinalPrice(Math.round(plan.price * (100 - response.data.discount_percent) / 100));
+        toast.success(`¡Descuento del ${response.data.discount_percent}% aplicado!`);
+      } else {
+        setDiscountApplied(null);
+        setFinalPrice(null);
+        toast.error('Código inválido');
+      }
+    } catch (error) {
+      toast.error('Error al validar código');
+    }
   };
 
   const validateForm = () => {
