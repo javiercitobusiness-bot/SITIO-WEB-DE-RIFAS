@@ -10,6 +10,9 @@ export default function PrizeInfo({ event }) {
   ];
 
   const prizes = event?.prizes || defaultPrizes;
+  
+  // Soportar múltiples imágenes de premios
+  const prizeImages = event?.prize_images || (event?.image_url ? [event.image_url] : []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-CO', {
@@ -23,6 +26,30 @@ export default function PrizeInfo({ event }) {
   return (
     <section id="premios" className="py-16 px-4 bg-slate-950/50">
       <div className="max-w-6xl mx-auto">
+        {/* Prize Images FIRST - Arriba */}
+        {prizeImages.length > 0 && (
+          <div className="mb-12">
+            <div className={`grid gap-6 ${
+              prizeImages.length === 1 ? 'max-w-2xl mx-auto' : 
+              prizeImages.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : 
+              'md:grid-cols-3'
+            }`}>
+              {prizeImages.map((img, idx) => (
+                <div key={idx} className="relative group">
+                  <img 
+                    src={img} 
+                    alt={`Premio ${idx + 1}`}
+                    className="w-full h-64 object-cover rounded-2xl shadow-2xl border-2 border-cyan-500/20 group-hover:border-cyan-500/50 transition-all"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-2xl">
+                    <span className="text-white font-semibold">Premio {idx + 1}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="text-center mb-12">
           <Trophy className="w-12 h-12 mx-auto text-yellow-400 mb-4" />
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
@@ -91,17 +118,6 @@ export default function PrizeInfo({ event }) {
             </div>
           ))}
         </div>
-
-        {/* Event Image if available */}
-        {event?.image_url && (
-          <div className="mt-12">
-            <img 
-              src={event.image_url} 
-              alt={event.name}
-              className="w-full max-w-2xl mx-auto rounded-2xl shadow-2xl"
-            />
-          </div>
-        )}
       </div>
     </section>
   );
