@@ -112,6 +112,12 @@ export default function PaymentSuccess() {
                         Descargar Imagen
                       </Button>
                     </div>
+
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4">
+                      <p className="text-yellow-400 text-sm text-center font-medium">
+                        📸 ¡IMPORTANTE! Toma una captura de pantalla o descarga la imagen para guardar tus números
+                      </p>
+                    </div>
                     
                     <div 
                       ref={diamondsRef}
