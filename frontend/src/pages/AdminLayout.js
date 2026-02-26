@@ -1851,6 +1851,7 @@ export default function AdminLayout() {
           <Route path="events" element={<EventsView />} />
           <Route path="purchases" element={<PurchasesView />} />
           <Route path="winners" element={<WinnersSearchView />} />
+          <Route path="testimonials" element={<TestimonialsView />} />
           <Route path="customers" element={<CustomersView />} />
           <Route path="payments" element={<PaymentGatewaysView />} />
           <Route path="settings" element={<SiteSettingsView />} />
