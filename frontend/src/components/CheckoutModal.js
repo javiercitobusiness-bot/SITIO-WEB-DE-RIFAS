@@ -15,7 +15,8 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
     customer_name: '',
     customer_email: '',
     customer_phone: '',
-    discount_code: ''
+    discount_code: '',
+    payment_method: 'bold'
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
