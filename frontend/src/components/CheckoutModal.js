@@ -216,6 +216,43 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
             )}
           </div>
 
+          {/* Selección de método de pago */}
+          <div className="space-y-3">
+            <Label>Método de pago</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({...formData, payment_method: 'bold'})}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  formData.payment_method === 'bold' 
+                    ? 'border-cyan-500 bg-cyan-500/10' 
+                    : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                }`}
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-1">💳</div>
+                  <p className="text-white font-semibold text-sm">BOLD</p>
+                  <p className="text-white/50 text-xs">Tarjeta, PSE, Nequi</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({...formData, payment_method: 'mercadopago'})}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  formData.payment_method === 'mercadopago' 
+                    ? 'border-cyan-500 bg-cyan-500/10' 
+                    : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                }`}
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-1">🔵</div>
+                  <p className="text-white font-semibold text-sm">Mercado Pago</p>
+                  <p className="text-white/50 text-xs">Todas las opciones</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
           <div className="pt-4 flex gap-3">
             <Button
               type="button"
