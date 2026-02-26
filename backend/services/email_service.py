@@ -17,40 +17,33 @@ class EmailService:
         self.client = SendGridAPIClient(api_key) if api_key else None
     
     def _create_diamond_html(self, number: str) -> str:
-        """Crear diamante visual con número usando HTML/CSS puro (mejor compatibilidad con emails)"""
+        """Crear diamante visual con número usando tabla HTML (máxima compatibilidad con emails)"""
         return f"""
-        <div style="display: inline-block; width: 85px; height: 100px; margin: 5px; text-align: center; vertical-align: top;">
-            <div style="
-                width: 0;
-                height: 0;
-                border-left: 40px solid transparent;
-                border-right: 40px solid transparent;
-                border-bottom: 25px solid #0096C7;
-                margin: 0 auto;
-            "></div>
-            <div style="
-                width: 0;
-                height: 0;
-                border-left: 40px solid transparent;
-                border-right: 40px solid transparent;
-                border-top: 55px solid #00B4D8;
-                margin: 0 auto;
-                position: relative;
-            ">
-                <span style="
-                    position: absolute;
-                    top: -40px;
-                    left: -25px;
-                    width: 50px;
-                    font-family: Arial, sans-serif;
-                    font-size: 11px;
-                    font-weight: bold;
-                    color: white;
-                    text-align: center;
-                    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-                ">{number}</span>
-            </div>
-        </div>
+        <table cellpadding="0" cellspacing="0" border="0" style="display: inline-block; margin: 5px; vertical-align: top;">
+            <tr>
+                <td align="center" style="
+                    width: 80px;
+                    height: 80px;
+                    background: linear-gradient(135deg, #48CAE4 0%, #00B4D8 50%, #0096C7 100%);
+                    background-color: #00B4D8;
+                    border-radius: 8px;
+                    border: 2px solid #023047;
+                ">
+                    <span style="
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: #FFFFFF;
+                        text-shadow: 1px 1px 2px #023047;
+                    ">{number}</span>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" style="padding-top: 3px;">
+                    <span style="font-size: 10px; color: #48CAE4;">💎</span>
+                </td>
+            </tr>
+        </table>
         """
     
     async def send_diamonds_email(
