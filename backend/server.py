@@ -341,9 +341,17 @@ async def verify_and_process_payment(reference: str):
             return {"status": "not_found"}
         
         if purchase.get("status") == "APPROVED":
-            return {"status": "already_processed"}
+            # Ya procesada, obtener diamantes asignados
+            assignment = await db.diamond_assignments.find_one({"reference": purchase["reference"]})
+            return {
+                "status": "already_processed",
+                "diamonds": assignment.get("diamonds", []) if assignment else [],
+                "customer_name": purchase.get("customer_name"),
+                "plan": purchase.get("plan"),
+                "amount": purchase.get("amount")
+            }
         
-        # Procesar la compra directamente (el pago ya fue exitoso si llegó a la página de éxito)
+        # Procesar la compra
         diamonds = await inventory_service.assign_diamonds(purchase["diamonds_count"])
         
         await db.diamond_assignments.insert_one({
@@ -361,17 +369,26 @@ async def verify_and_process_payment(reference: str):
             {"$set": {"status": "APPROVED", "diamonds_assigned": True}}
         )
         
-        # Enviar email
-        await email_service.send_diamonds_email(
-            recipient_email=purchase["customer_email"],
-            recipient_name=purchase["customer_name"],
-            diamonds=diamonds,
-            plan_name=PAYMENT_PLANS[purchase["plan"]].name,
-            amount_paid=purchase["amount"]
-        )
+        # Intentar enviar email (no bloquea si falla)
+        try:
+            await email_service.send_diamonds_email(
+                recipient_email=purchase["customer_email"],
+                recipient_name=purchase["customer_name"],
+                diamonds=diamonds,
+                plan_name=PAYMENT_PLANS[purchase["plan"]].name,
+                amount_paid=purchase["amount"]
+            )
+        except Exception as email_error:
+            logger.error(f"Email failed but diamonds assigned: {email_error}")
         
         logger.info(f"Payment auto-processed: {purchase['reference']}")
-        return {"status": "processed", "diamonds": len(diamonds), "email": purchase["customer_email"]}
+        return {
+            "status": "processed",
+            "diamonds": diamonds,
+            "customer_name": purchase.get("customer_name"),
+            "plan": purchase.get("plan"),
+            "amount": purchase.get("amount")
+        }
         
     except Exception as e:
         logger.error(f"Error verifying payment: {str(e)}")
