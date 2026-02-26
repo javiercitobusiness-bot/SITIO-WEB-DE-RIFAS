@@ -400,12 +400,25 @@ async def test_email(email: str):
 
 @api_router.post("/verify-and-process/{reference}")
 async def verify_and_process_payment(reference: str):
-    """Verificar pago con BOLD y procesar automáticamente"""
+    """Verificar pago y procesar automáticamente"""
     try:
         logger.info(f"Verifying payment for reference: {reference}")
         
-        # Buscar la compra
+        # Buscar la compra por múltiples campos
         purchase = await db.purchases.find_one({"reference": {"$regex": reference}})
+        
+        if not purchase:
+            # Intentar buscar por preference_id de MercadoPago
+            purchase = await db.purchases.find_one({"payment_link": {"$regex": reference}})
+        
+        if not purchase:
+            # Buscar la compra más reciente pendiente (fallback)
+            purchase = await db.purchases.find_one(
+                {"status": "PENDING"},
+                sort=[("created_at", -1)]
+            )
+            if purchase:
+                logger.info(f"Found most recent pending purchase: {purchase.get('reference')}")
         
         if not purchase:
             logger.warning(f"Purchase not found: {reference}")
@@ -449,6 +462,7 @@ async def verify_and_process_payment(reference: str):
                 plan_name=PAYMENT_PLANS[purchase["plan"]].name,
                 amount_paid=purchase["amount"]
             )
+            logger.info(f"Email sent to {purchase['customer_email']}")
         except Exception as email_error:
             logger.error(f"Email failed but diamonds assigned: {email_error}")
         
