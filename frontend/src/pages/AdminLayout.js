@@ -619,6 +619,7 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
         description: event.description || '',
         status: event.status || 'draft',
         image_url: event.image_url || '',
+        prize_images: event.prize_images || (event.image_url ? [event.image_url, '', ''] : ['', '', '']),
         prizes: event.prizes || [],
         plans: event.plans || [],
         price_per_number: event.price_per_number || 500,
@@ -629,10 +630,20 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
     }
   }, [event]);
 
+  const updatePrizeImage = (index, value) => {
+    const newImages = [...(formData.prize_images || ['', '', ''])];
+    newImages[index] = value;
+    setFormData({...formData, prize_images: newImages});
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      await api.put(`/api/admin/events/${event.event_id}`, formData);
+      const dataToSend = {
+        ...formData,
+        prize_images: (formData.prize_images || []).filter(img => img && img.trim() !== '')
+      };
+      await api.put(`/api/admin/events/${event.event_id}`, dataToSend);
       toast.success('Evento actualizado');
       onSuccess();
     } catch (error) {
