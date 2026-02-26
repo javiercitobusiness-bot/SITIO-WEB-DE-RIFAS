@@ -559,14 +559,21 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Image className="w-4 h-4" />
-              URL de imagen del premio
+              Imágenes de Premios (hasta 3)
             </Label>
-            <Input
-              value={formData.image_url}
-              onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-              className="bg-slate-800 border-slate-700"
-              placeholder="https://ejemplo.com/imagen.jpg"
-            />
+            {[0, 1, 2].map((idx) => (
+              <div key={idx} className="space-y-1">
+                <Input
+                  value={formData.prize_images[idx] || ''}
+                  onChange={(e) => updatePrizeImage(idx, e.target.value)}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder={`URL imagen premio ${idx + 1}`}
+                />
+                {formData.prize_images[idx] && (
+                  <img src={formData.prize_images[idx]} alt={`Premio ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                )}
+              </div>
+            ))}
           </div>
 
           <DialogFooter className="gap-2">
