@@ -116,6 +116,24 @@ async def get_inventory_stats():
         logger.error(f"Error getting inventory stats: {str(e)}")
         raise HTTPException(status_code=500, detail="Error getting inventory stats")
 
+# Códigos de descuento
+DISCOUNT_CODES = {
+    "RECUPERA80": {"discount_percent": 80, "max_uses": 1, "used": 0}
+}
+
+@api_router.post("/validate-discount")
+async def validate_discount(request: Request):
+    """Validar código de descuento"""
+    body = await request.json()
+    code = body.get("code", "").upper()
+    
+    if code in DISCOUNT_CODES:
+        discount = DISCOUNT_CODES[code]
+        if discount["used"] < discount["max_uses"]:
+            return {"valid": True, "discount_percent": discount["discount_percent"]}
+    
+    return {"valid": False}
+
 @api_router.post("/purchase", response_model=PurchaseResponse)
 async def create_purchase(request: PurchaseRequest):
     """Crear nueva compra y generar link de pago BOLD"""
