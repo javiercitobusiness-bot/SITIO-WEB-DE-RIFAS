@@ -27,6 +27,7 @@ class PurchaseRequest(BaseModel):
     customer_email: EmailStr
     customer_phone: str = Field(..., pattern=r'^\+?[\d\s\-()]+$')
     discount_code: Optional[str] = None
+    payment_method: Optional[str] = "bold"  # "bold" o "mercadopago"
 
 class PurchaseResponse(BaseModel):
     """Respuesta después de crear compra"""
