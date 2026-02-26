@@ -67,6 +67,13 @@ export default function PaymentSuccess() {
 
   const diamonds = result?.diamonds || [];
 
+  // Debug info para ver qué está pasando
+  useEffect(() => {
+    if (result) {
+      console.log('Payment result:', result);
+    }
+  }, [result]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <Header />
@@ -92,11 +99,16 @@ export default function PaymentSuccess() {
                   {result?.customer_name && (
                     <p className="text-white/70">Gracias, {result.customer_name}</p>
                   )}
-                  {diamonds.length > 0 && (
+                  {diamonds.length > 0 ? (
                     <p className="text-lg text-cyan-400 font-semibold mt-2">
                       ¡Tienes {diamonds.length} diamantes!
                     </p>
-                  )}
+                  ) : result?.status === 'not_found' || result?.status === 'no_reference' ? (
+                    <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                      <p className="text-yellow-400">Tu pago fue procesado. Revisa tu correo electrónico para ver tus diamantes.</p>
+                      <p className="text-white/50 text-sm mt-2">Si no recibes el correo en 5 minutos, contáctanos.</p>
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* Diamantes */}
