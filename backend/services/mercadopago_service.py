@@ -26,6 +26,9 @@ class MercadoPagoService:
     ) -> Dict[str, Any]:
         """Crear link de pago con Mercado Pago"""
         try:
+            # Incluir referencia en la URL de callback
+            callback_with_ref = f"{self.redirect_url}?reference={reference}"
+            
             preference_data = {
                 "items": [
                     {
@@ -41,9 +44,9 @@ class MercadoPagoService:
                 },
                 "external_reference": reference,
                 "back_urls": {
-                    "success": self.redirect_url,
-                    "failure": self.redirect_url,
-                    "pending": self.redirect_url
+                    "success": callback_with_ref,
+                    "failure": callback_with_ref,
+                    "pending": callback_with_ref
                 },
                 "auto_return": "approved",
                 "statement_descriptor": "DINAMICA DIAMANTES"
