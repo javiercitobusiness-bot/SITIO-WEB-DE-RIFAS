@@ -292,6 +292,56 @@ async def test_email(email: str):
         logger.error(f"Error testing email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/verify-and-process/{reference}")
+async def verify_and_process_payment(reference: str):
+    """Verificar pago con BOLD y procesar automáticamente"""
+    try:
+        logger.info(f"Verifying payment for reference: {reference}")
+        
+        # Buscar la compra
+        purchase = await db.purchases.find_one({"reference": {"$regex": reference}})
+        
+        if not purchase:
+            logger.warning(f"Purchase not found: {reference}")
+            return {"status": "not_found"}
+        
+        if purchase.get("status") == "APPROVED":
+            return {"status": "already_processed"}
+        
+        # Procesar la compra directamente (el pago ya fue exitoso si llegó a la página de éxito)
+        diamonds = await inventory_service.assign_diamonds(purchase["diamonds_count"])
+        
+        await db.diamond_assignments.insert_one({
+            "reference": purchase["reference"],
+            "customer_email": purchase["customer_email"],
+            "customer_name": purchase["customer_name"],
+            "diamonds": diamonds,
+            "plan": purchase["plan"],
+            "amount_paid": purchase["amount"],
+            "assigned_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        await db.purchases.update_one(
+            {"reference": purchase["reference"]},
+            {"$set": {"status": "APPROVED", "diamonds_assigned": True}}
+        )
+        
+        # Enviar email
+        await email_service.send_diamonds_email(
+            recipient_email=purchase["customer_email"],
+            recipient_name=purchase["customer_name"],
+            diamonds=diamonds,
+            plan_name=PAYMENT_PLANS[purchase["plan"]].name,
+            amount_paid=purchase["amount"]
+        )
+        
+        logger.info(f"Payment auto-processed: {purchase['reference']}")
+        return {"status": "processed", "diamonds": len(diamonds), "email": purchase["customer_email"]}
+        
+    except Exception as e:
+        logger.error(f"Error verifying payment: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
 @api_router.post("/admin/process-pending-payments")
 async def process_pending_payments(request: Request):
     """Procesar manualmente todas las compras pendientes"""
