@@ -1552,6 +1552,131 @@ function PaymentGatewaysView() {
   );
 }
 
+// Testimonials View
+function TestimonialsView() {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newTestimonial, setNewTestimonial] = useState({
+    name: '', location: '', prize_amount: '', message: '', image_url: ''
+  });
+
+  useEffect(() => { fetchTestimonials(); }, []);
+
+  const fetchTestimonials = async () => {
+    try {
+      const response = await api.get('/api/admin/testimonials');
+      setTestimonials(response.data.testimonials || []);
+    } catch (error) {
+      console.log('No testimonials yet');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addTestimonial = async () => {
+    try {
+      await api.post('/api/admin/testimonials', {
+        ...newTestimonial,
+        prize_amount: parseInt(newTestimonial.prize_amount) || 0
+      });
+      toast.success('Testimonio agregado');
+      setShowAddModal(false);
+      setNewTestimonial({ name: '', location: '', prize_amount: '', message: '', image_url: '' });
+      fetchTestimonials();
+    } catch (error) {
+      toast.error('Error al agregar');
+    }
+  };
+
+  const deleteTestimonial = async (id) => {
+    if (window.confirm('¿Eliminar este testimonio?')) {
+      try {
+        await api.delete(`/api/admin/testimonials/${id}`);
+        toast.success('Eliminado');
+        fetchTestimonials();
+      } catch (error) {
+        toast.error('Error');
+      }
+    }
+  };
+
+  const formatCurrency = (amount) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
+
+  if (loading) return <div className="flex items-center justify-center h-64"><RefreshCw className="w-8 h-8 animate-spin text-cyan-400" /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Testimonios de Ganadores</h2>
+        <Button onClick={() => setShowAddModal(true)} className="bg-cyan-600 hover:bg-cyan-700">
+          + Agregar Testimonio
+        </Button>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        {testimonials.map((t) => (
+          <Card key={t.id} className="bg-slate-800/50 border-slate-700">
+            <CardContent className="p-4">
+              <div className="flex gap-4">
+                {t.image_url && (
+                  <img src={t.image_url} alt={t.name} className="w-16 h-16 rounded-full object-cover" />
+                )}
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold">{t.name}</h3>
+                  <p className="text-white/50 text-sm">{t.location}</p>
+                  <p className="text-green-400 font-bold">{formatCurrency(t.prize_amount)}</p>
+                  <p className="text-white/70 text-sm mt-2">"{t.message}"</p>
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => deleteTestimonial(t.id)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {testimonials.length === 0 && (
+        <div className="text-center py-12 text-white/50">
+          No hay testimonios aún. Agrega el primer ganador.
+        </div>
+      )}
+
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Agregar Testimonio</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nombre del ganador</Label>
+              <Input value={newTestimonial.name} onChange={(e) => setNewTestimonial({...newTestimonial, name: e.target.value})} className="bg-slate-800 border-slate-700 text-white" placeholder="María García" />
+            </div>
+            <div>
+              <Label>Ciudad/Ubicación</Label>
+              <Input value={newTestimonial.location} onChange={(e) => setNewTestimonial({...newTestimonial, location: e.target.value})} className="bg-slate-800 border-slate-700 text-white" placeholder="Medellín, Colombia" />
+            </div>
+            <div>
+              <Label>Premio ganado (COP)</Label>
+              <Input type="number" value={newTestimonial.prize_amount} onChange={(e) => setNewTestimonial({...newTestimonial, prize_amount: e.target.value})} className="bg-slate-800 border-slate-700 text-white" placeholder="1500000" />
+            </div>
+            <div>
+              <Label>Testimonio/Mensaje</Label>
+              <Input value={newTestimonial.message} onChange={(e) => setNewTestimonial({...newTestimonial, message: e.target.value})} className="bg-slate-800 border-slate-700 text-white" placeholder="¡Gracias! Nunca pensé ganar..." />
+            </div>
+            <div>
+              <Label>URL de foto (opcional)</Label>
+              <Input value={newTestimonial.image_url} onChange={(e) => setNewTestimonial({...newTestimonial, image_url: e.target.value})} className="bg-slate-800 border-slate-700 text-white" placeholder="https://..." />
+            </div>
+            <Button onClick={addTestimonial} className="w-full bg-cyan-600">Guardar Testimonio</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 // Winners Search View
 function WinnersSearchView() {
   const [searchNumber, setSearchNumber] = useState('');
