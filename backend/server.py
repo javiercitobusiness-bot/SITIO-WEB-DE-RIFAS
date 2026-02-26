@@ -292,6 +292,98 @@ async def test_email(email: str):
         logger.error(f"Error testing email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/admin/process-pending-payments")
+async def process_pending_payments(request: Request):
+    """Procesar manualmente todas las compras pendientes"""
+    await get_current_admin(request)
+    
+    try:
+        pending = await db.purchases.find({"status": "PENDING"}).to_list(100)
+        processed = 0
+        
+        for purchase in pending:
+            # Asignar diamantes
+            diamonds = await inventory_service.assign_diamonds(purchase["diamonds_count"])
+            
+            # Guardar asignación
+            await db.diamond_assignments.insert_one({
+                "reference": purchase["reference"],
+                "customer_email": purchase["customer_email"],
+                "customer_name": purchase["customer_name"],
+                "diamonds": diamonds,
+                "plan": purchase["plan"],
+                "amount_paid": purchase["amount"],
+                "assigned_at": datetime.now(timezone.utc).isoformat()
+            })
+            
+            # Actualizar compra
+            await db.purchases.update_one(
+                {"reference": purchase["reference"]},
+                {"$set": {"status": "APPROVED", "diamonds_assigned": True}}
+            )
+            
+            # Enviar email
+            await email_service.send_diamonds_email(
+                recipient_email=purchase["customer_email"],
+                recipient_name=purchase["customer_name"],
+                diamonds=diamonds,
+                plan_name=PAYMENT_PLANS[purchase["plan"]].name,
+                amount_paid=purchase["amount"]
+            )
+            
+            processed += 1
+            logger.info(f"Manually processed: {purchase['reference']}")
+        
+        return {"processed": processed, "message": f"Se procesaron {processed} compras pendientes"}
+    except Exception as e:
+        logger.error(f"Error processing pending: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/admin/process-single-payment/{reference}")
+async def process_single_payment(request: Request, reference: str):
+    """Procesar una compra específica por referencia"""
+    await get_current_admin(request)
+    
+    try:
+        purchase = await db.purchases.find_one({"reference": reference})
+        if not purchase:
+            raise HTTPException(status_code=404, detail="Compra no encontrada")
+        
+        if purchase.get("status") == "APPROVED":
+            return {"message": "Esta compra ya fue procesada"}
+        
+        diamonds = await inventory_service.assign_diamonds(purchase["diamonds_count"])
+        
+        await db.diamond_assignments.insert_one({
+            "reference": purchase["reference"],
+            "customer_email": purchase["customer_email"],
+            "customer_name": purchase["customer_name"],
+            "diamonds": diamonds,
+            "plan": purchase["plan"],
+            "amount_paid": purchase["amount"],
+            "assigned_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        await db.purchases.update_one(
+            {"reference": reference},
+            {"$set": {"status": "APPROVED", "diamonds_assigned": True}}
+        )
+        
+        await email_service.send_diamonds_email(
+            recipient_email=purchase["customer_email"],
+            recipient_name=purchase["customer_name"],
+            diamonds=diamonds,
+            plan_name=PAYMENT_PLANS[purchase["plan"]].name,
+            amount_paid=purchase["amount"]
+        )
+        
+        return {"message": "Compra procesada exitosamente", "diamonds": len(diamonds)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing single payment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Admin functions
 def create_admin_token(username: str) -> str:
     payload = {
