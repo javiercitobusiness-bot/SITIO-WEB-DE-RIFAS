@@ -310,6 +310,9 @@ export default function Home() {
         {/* Pricing Plans */}
         <PricingPlans plans={event?.plans || plans} onSelectPlan={handleSelectPlan} symbolType={event?.symbol_type} />
 
+        {/* Testimonials */}
+        <Testimonials />
+
         {/* How it Works */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
