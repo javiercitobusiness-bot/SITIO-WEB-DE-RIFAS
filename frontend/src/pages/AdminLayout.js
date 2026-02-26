@@ -382,6 +382,7 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
     start_date: '',
     end_date: '',
     image_url: '',
+    prize_images: ['', '', ''],
     symbol_type: 'diamond',
     lottery_name: 'Lotería de Medellín'
   });
@@ -395,16 +396,24 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
     { value: 1000000, label: '1,000,000 números' }
   ];
 
+  const updatePrizeImage = (index, value) => {
+    const newImages = [...formData.prize_images];
+    newImages[index] = value;
+    setFormData({...formData, prize_images: newImages});
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await api.post('/api/admin/events', {
+      const dataToSend = {
         ...formData,
+        prize_images: formData.prize_images.filter(img => img.trim() !== ''),
         start_date: new Date(formData.start_date).toISOString(),
         end_date: new Date(formData.end_date).toISOString()
-      });
+      };
+      await api.post('/api/admin/events', dataToSend);
       toast.success('Evento creado exitosamente');
       onSuccess();
     } catch (error) {
