@@ -955,7 +955,23 @@ function PurchasesView() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Compras</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Compras</h2>
+        <Button 
+          onClick={async () => {
+            try {
+              const response = await api.post('/api/admin/process-pending-payments');
+              toast.success(`${response.data.message}`);
+              fetchPurchases();
+            } catch (error) {
+              toast.error('Error al procesar compras');
+            }
+          }}
+          className="bg-green-600 hover:bg-green-700"
+        >
+          Procesar Pendientes
+        </Button>
+      </div>
 
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-0">
@@ -967,12 +983,13 @@ function PurchasesView() {
                 <TableHead className="text-white/60">Plan</TableHead>
                 <TableHead className="text-white/60">Monto</TableHead>
                 <TableHead className="text-white/60">Estado</TableHead>
+                <TableHead className="text-white/60">Acción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {purchases.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-white/60 py-8">
+                  <TableCell colSpan={6} className="text-center text-white/60 py-8">
                     No hay compras registradas
                   </TableCell>
                 </TableRow>
@@ -992,6 +1009,25 @@ function PurchasesView() {
                       <Badge className={purchase.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
                         {purchase.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {purchase.status === 'PENDING' && (
+                        <Button
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              await api.post(`/api/admin/process-single-payment/${purchase.reference}`);
+                              toast.success('Compra procesada y email enviado');
+                              fetchPurchases();
+                            } catch (error) {
+                              toast.error('Error al procesar');
+                            }
+                          }}
+                          className="bg-cyan-600 hover:bg-cyan-700 text-xs"
+                        >
+                          Procesar
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
