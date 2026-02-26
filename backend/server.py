@@ -66,6 +66,7 @@ TOTAL_DIAMANTES = 1000000
 
 # Inicializar servicios
 bold_service = BOLDPaymentService(BOLD_API_KEY, BOLD_API_BASE_URL)
+mercadopago_service = MercadoPagoService()
 email_service = EmailService(SENDGRID_API_KEY, SENDER_EMAIL)
 inventory_service = InventoryService(db)
 event_service = EventService(db)
