@@ -144,6 +144,20 @@ async def create_purchase(request: PurchaseRequest):
         plan = PAYMENT_PLANS[request.plan]
         reference = f"{plan.id}_{uuid.uuid4().hex[:12]}"
         
+        # Aplicar descuento si hay código válido
+        final_amount = plan.price_cop
+        discount_applied = 0
+        
+        if request.discount_code:
+            code = request.discount_code.upper()
+            if code in DISCOUNT_CODES:
+                discount = DISCOUNT_CODES[code]
+                if discount["used"] < discount["max_uses"]:
+                    discount_applied = discount["discount_percent"]
+                    final_amount = int(plan.price_cop * (100 - discount_applied) / 100)
+                    DISCOUNT_CODES[code]["used"] += 1
+                    logger.info(f"Discount {code} applied: {discount_applied}% off")
+        
         stats = await inventory_service.get_inventory_stats()
         if stats["available_diamonds"] < plan.diamonds_count:
             raise HTTPException(
@@ -152,8 +166,8 @@ async def create_purchase(request: PurchaseRequest):
             )
         
         payment_data = await bold_service.create_payment_link(
-            amount=plan.price_cop,
-            description=f"{DINAMICA_NAME} - {plan.name}",
+            amount=final_amount,
+            description=f"{DINAMICA_NAME} - {plan.name}" + (f" (Descuento {discount_applied}%)" if discount_applied else ""),
             customer_email=request.customer_email,
             reference=reference,
             customer_name=request.customer_name
@@ -165,21 +179,24 @@ async def create_purchase(request: PurchaseRequest):
             "customer_name": request.customer_name,
             "customer_email": request.customer_email,
             "customer_phone": request.customer_phone,
-            "amount": plan.price_cop,
+            "amount": final_amount,
+            "original_amount": plan.price_cop,
+            "discount_code": request.discount_code if discount_applied else None,
+            "discount_percent": discount_applied,
             "diamonds_count": plan.diamonds_count,
             "status": "PENDING",
             "payment_link": payment_data.get("url", ""),
             "created_at": payment_data.get("created_at")
         })
         
-        logger.info(f"Purchase created: {reference} for {request.customer_email}")
+        logger.info(f"Purchase created: {reference} for {request.customer_email}, amount: {final_amount}")
         
         return PurchaseResponse(
             payment_link=payment_data.get("url", ""),
             payment_reference=reference,
             plan=plan.name,
             diamonds_count=plan.diamonds_count,
-            amount=plan.price_cop,
+            amount=final_amount,
             currency="COP"
         )
         
