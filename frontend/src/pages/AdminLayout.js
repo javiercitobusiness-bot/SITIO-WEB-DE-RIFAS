@@ -40,7 +40,8 @@ import {
   Globe,
   Save,
   ChevronRight,
-  Lock
+  Lock,
+  Search
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
