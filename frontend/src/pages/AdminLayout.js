@@ -1604,6 +1604,7 @@ export default function AdminLayout() {
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/dashboard/events', icon: Calendar, label: 'Eventos' },
     { path: '/admin/dashboard/purchases', icon: CreditCard, label: 'Compras' },
+    { path: '/admin/dashboard/winners', icon: Search, label: 'Buscar Ganadores' },
     { path: '/admin/dashboard/customers', icon: Users, label: 'Clientes' },
     { path: '/admin/dashboard/payments', icon: DollarSign, label: 'Pasarelas' },
     { path: '/admin/dashboard/settings', icon: Settings, label: 'Configuración' },
