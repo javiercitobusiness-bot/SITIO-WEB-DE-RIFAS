@@ -60,6 +60,11 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
         ...formData
       });
       
+      // Guardar referencia para procesar después del pago
+      if (response.data.payment_reference) {
+        localStorage.setItem('lastPurchaseReference', response.data.payment_reference);
+      }
+      
       toast.success('Redirigiendo al pago...');
       onComplete(response.data);
     } catch (error) {
