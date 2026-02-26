@@ -25,6 +25,7 @@ from services.email_service import EmailService
 from services.inventory_service import InventoryService
 from services.event_service import EventService
 from services.payment_gateway_service import PaymentGatewayService
+from services.mercadopago_service import MercadoPagoService
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
