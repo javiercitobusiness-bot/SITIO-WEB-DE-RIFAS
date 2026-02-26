@@ -59,6 +59,9 @@ class BOLDPaymentService:
             
             logger.info(f"Expiration timestamp (nanoseconds): {expiration_date}")
             
+            # Incluir referencia en la URL de callback para poder procesar
+            callback_with_ref = f"{self.redirect_url}?reference={reference}"
+            
             payload = {
                 "amount_type": "CLOSE",
                 "amount": {
@@ -71,13 +74,13 @@ class BOLDPaymentService:
                 "payment_methods": ["CREDIT_CARD", "PSE", "NEQUI"],
                 "reference": reference,
                 "expiration_date": expiration_date,
-                "callback_url": self.redirect_url
+                "callback_url": callback_with_ref
             }
             
             if customer_name:
                 payload["metadata"] = {"customer_name": customer_name}
             
-            logger.info(f"Redirect URL configured: {self.redirect_url}")
+            logger.info(f"Redirect URL with reference: {callback_with_ref}")
             
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(url, json=payload, headers=headers)
