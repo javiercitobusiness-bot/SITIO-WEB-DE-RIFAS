@@ -486,6 +486,70 @@ async def process_single_payment(request: Request, reference: str):
         logger.error(f"Error processing single payment: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/admin/search-diamond/{number}")
+async def search_diamond(request: Request, number: str):
+    """Buscar quién compró un número específico"""
+    await get_current_admin(request)
+    
+    try:
+        assignment = await db.diamond_assignments.find_one(
+            {"diamonds": number},
+            {"_id": 0}
+        )
+        
+        if assignment:
+            return {
+                "found": True,
+                "diamond": number,
+                "customer_name": assignment.get("customer_name"),
+                "customer_email": assignment.get("customer_email"),
+                "plan": assignment.get("plan"),
+                "amount_paid": assignment.get("amount_paid"),
+                "assigned_at": assignment.get("assigned_at")
+            }
+        
+        return {"found": False, "diamond": number}
+        
+    except Exception as e:
+        logger.error(f"Error searching diamond: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/admin/add-gateway")
+async def add_payment_gateway(request: Request):
+    """Agregar nueva pasarela de pago"""
+    await get_current_admin(request)
+    
+    body = await request.json()
+    
+    gateway = {
+        "name": body.get("name"),
+        "type": body.get("type"),
+        "api_key": body.get("api_key"),
+        "secret_key": body.get("secret_key", ""),
+        "active": body.get("active", True),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payment_gateways.insert_one(gateway)
+    
+    return {"status": "success", "message": "Pasarela agregada"}
+
+@api_router.get("/admin/gateways")
+async def get_gateways(request: Request):
+    """Obtener todas las pasarelas configuradas"""
+    await get_current_admin(request)
+    
+    gateways = await db.payment_gateways.find({}, {"_id": 0}).to_list(20)
+    return {"gateways": gateways}
+
+@api_router.delete("/admin/gateway/{name}")
+async def delete_gateway(request: Request, name: str):
+    """Eliminar pasarela"""
+    await get_current_admin(request)
+    
+    await db.payment_gateways.delete_one({"name": name})
+    return {"status": "success"}
+
 # Admin functions
 def create_admin_token(username: str) -> str:
     payload = {
