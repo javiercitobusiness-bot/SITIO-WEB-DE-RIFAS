@@ -319,6 +319,62 @@ async def handle_bold_webhook(request: Request):
             content={"status": "error_logged", "error": str(e)}
         )
 
+@api_router.post("/webhook/mercadopago")
+async def handle_mercadopago_webhook(request: Request):
+    """Webhook para recibir confirmaciones de pago de Mercado Pago"""
+    try:
+        body = await request.body()
+        logger.info(f"MercadoPago Webhook received: {body[:500]}")
+        
+        payload = json.loads(body)
+        
+        # Mercado Pago envía notificaciones de tipo "payment"
+        if payload.get("type") == "payment":
+            payment_id = payload.get("data", {}).get("id")
+            
+            if payment_id:
+                # Obtener detalles del pago
+                payment_info = await mercadopago_service.get_payment_status(str(payment_id))
+                
+                if payment_info and payment_info.get("status") == "approved":
+                    reference = payment_info.get("external_reference")
+                    
+                    purchase = await db.purchases.find_one({"reference": reference})
+                    
+                    if purchase and purchase.get("status") != "APPROVED":
+                        diamonds = await inventory_service.assign_diamonds(purchase["diamonds_count"])
+                        
+                        await db.diamond_assignments.insert_one({
+                            "reference": reference,
+                            "customer_email": purchase["customer_email"],
+                            "customer_name": purchase["customer_name"],
+                            "diamonds": diamonds,
+                            "plan": purchase["plan"],
+                            "amount_paid": purchase["amount"],
+                            "assigned_at": datetime.now(timezone.utc).isoformat()
+                        })
+                        
+                        await db.purchases.update_one(
+                            {"reference": reference},
+                            {"$set": {"status": "APPROVED", "diamonds_assigned": True}}
+                        )
+                        
+                        await email_service.send_diamonds_email(
+                            recipient_email=purchase["customer_email"],
+                            recipient_name=purchase["customer_name"],
+                            diamonds=diamonds,
+                            plan_name=PAYMENT_PLANS[purchase["plan"]].name,
+                            amount_paid=purchase["amount"]
+                        )
+                        
+                        logger.info(f"MercadoPago payment processed: {reference}")
+        
+        return JSONResponse(status_code=200, content={"status": "received"})
+        
+    except Exception as e:
+        logger.error(f"Error processing MercadoPago webhook: {str(e)}")
+        return JSONResponse(status_code=200, content={"status": "error_logged"})
+
 @api_router.post("/test-email")
 async def test_email(email: str):
     """Endpoint de prueba para enviar email"""
