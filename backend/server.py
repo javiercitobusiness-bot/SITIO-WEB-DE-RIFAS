@@ -486,6 +486,46 @@ async def process_single_payment(request: Request, reference: str):
         logger.error(f"Error processing single payment: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/testimonials")
+async def get_testimonials():
+    """Obtener todos los testimonios públicos"""
+    testimonials = await db.testimonials.find({"active": True}, {"_id": 0}).to_list(20)
+    return {"testimonials": testimonials}
+
+@api_router.get("/admin/testimonials")
+async def get_admin_testimonials(request: Request):
+    """Obtener todos los testimonios (admin)"""
+    await get_current_admin(request)
+    testimonials = await db.testimonials.find({}, {"_id": 0}).to_list(50)
+    return {"testimonials": testimonials}
+
+@api_router.post("/admin/testimonials")
+async def add_testimonial(request: Request):
+    """Agregar nuevo testimonio"""
+    await get_current_admin(request)
+    body = await request.json()
+    
+    testimonial = {
+        "id": str(uuid.uuid4())[:8],
+        "name": body.get("name"),
+        "location": body.get("location", ""),
+        "prize_amount": body.get("prize_amount", 0),
+        "message": body.get("message"),
+        "image_url": body.get("image_url", ""),
+        "active": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.testimonials.insert_one(testimonial)
+    return {"status": "success", "testimonial": testimonial}
+
+@api_router.delete("/admin/testimonials/{testimonial_id}")
+async def delete_testimonial(request: Request, testimonial_id: str):
+    """Eliminar testimonio"""
+    await get_current_admin(request)
+    await db.testimonials.delete_one({"id": testimonial_id})
+    return {"status": "success"}
+
 @api_router.get("/admin/search-diamond/{number}")
 async def search_diamond(request: Request, number: str):
     """Buscar quién compró un número específico"""
