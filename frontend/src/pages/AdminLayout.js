@@ -1384,6 +1384,8 @@ function SecuritySettingsView() {
 function PaymentGatewaysView() {
   const [gateways, setGateways] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newGateway, setNewGateway] = useState({ name: '', type: 'custom', api_key: '', secret_key: '' });
 
   useEffect(() => {
     fetchGateways();
@@ -1391,12 +1393,36 @@ function PaymentGatewaysView() {
 
   const fetchGateways = async () => {
     try {
-      const response = await api.get('/api/admin/payment-gateways');
+      const response = await api.get('/api/admin/gateways');
       setGateways(response.data.gateways || []);
     } catch (error) {
-      toast.error('Error al cargar pasarelas');
+      console.log('No custom gateways yet');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addGateway = async () => {
+    try {
+      await api.post('/api/admin/add-gateway', newGateway);
+      toast.success('Pasarela agregada');
+      setShowAddModal(false);
+      setNewGateway({ name: '', type: 'custom', api_key: '', secret_key: '' });
+      fetchGateways();
+    } catch (error) {
+      toast.error('Error al agregar pasarela');
+    }
+  };
+
+  const deleteGateway = async (name) => {
+    if (window.confirm('¿Eliminar esta pasarela?')) {
+      try {
+        await api.delete(`/api/admin/gateway/${name}`);
+        toast.success('Pasarela eliminada');
+        fetchGateways();
+      } catch (error) {
+        toast.error('Error al eliminar');
+      }
     }
   };
 
@@ -1406,8 +1432,14 @@ function PaymentGatewaysView() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Pasarelas de Pago</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Pasarelas de Pago</h2>
+        <Button onClick={() => setShowAddModal(true)} className="bg-cyan-600 hover:bg-cyan-700">
+          + Agregar Pasarela
+        </Button>
+      </div>
 
+      {/* BOLD - Principal */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
@@ -1416,13 +1448,135 @@ function PaymentGatewaysView() {
             </div>
             <div className="flex-1">
               <h3 className="text-white font-semibold">BOLD</h3>
-              <p className="text-sm text-white/60">Pasarela de pagos principal</p>
+              <p className="text-sm text-white/60">Pasarela principal (configurada en servidor)</p>
             </div>
             <Badge className="bg-green-500/20 text-green-400">Activo</Badge>
           </div>
-          <p className="text-sm text-white/50 mt-4">
-            Las credenciales de BOLD están configuradas en las variables de entorno del servidor.
-          </p>
+        </CardContent>
+      </Card>
+
+      {/* Pasarelas personalizadas */}
+      {gateways.map((gw) => (
+        <Card key={gw.name} className="bg-slate-800/50 border-slate-700">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-white font-semibold">{gw.name}</h3>
+                <p className="text-sm text-white/60">API Key: {gw.api_key?.slice(0, 10)}...</p>
+              </div>
+              <Badge className={gw.active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}>
+                {gw.active ? 'Activo' : 'Inactivo'}
+              </Badge>
+              <Button variant="destructive" size="sm" onClick={() => deleteGateway(gw.name)}>
+                Eliminar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* Modal agregar pasarela */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Agregar Nueva Pasarela</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nombre</Label>
+              <Input 
+                value={newGateway.name}
+                onChange={(e) => setNewGateway({...newGateway, name: e.target.value})}
+                placeholder="Ej: Stripe, PayU, Mercadopago"
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+            <div>
+              <Label>API Key</Label>
+              <Input 
+                value={newGateway.api_key}
+                onChange={(e) => setNewGateway({...newGateway, api_key: e.target.value})}
+                placeholder="Tu API key"
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+            <div>
+              <Label>Secret Key (opcional)</Label>
+              <Input 
+                value={newGateway.secret_key}
+                onChange={(e) => setNewGateway({...newGateway, secret_key: e.target.value})}
+                placeholder="Tu secret key"
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+            <Button onClick={addGateway} className="w-full bg-cyan-600">Guardar Pasarela</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Winners Search View
+function WinnersSearchView() {
+  const [searchNumber, setSearchNumber] = useState('');
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const searchDiamond = async () => {
+    if (!searchNumber) return;
+    setLoading(true);
+    try {
+      const response = await api.get(`/api/admin/search-diamond/${searchNumber}`);
+      setResult(response.data);
+    } catch (error) {
+      toast.error('Error al buscar');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-white">Buscar Ganadores</h2>
+
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardContent className="p-6">
+          <div className="flex gap-4">
+            <Input
+              value={searchNumber}
+              onChange={(e) => setSearchNumber(e.target.value)}
+              placeholder="Ingresa el número del diamante"
+              className="bg-slate-900 border-slate-600 text-white"
+            />
+            <Button onClick={searchDiamond} disabled={loading} className="bg-cyan-600 hover:bg-cyan-700">
+              {loading ? 'Buscando...' : 'Buscar'}
+            </Button>
+          </div>
+
+          {result && (
+            <div className="mt-6">
+              {result.found ? (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                  <h3 className="text-green-400 font-semibold mb-3">¡Número encontrado!</h3>
+                  <div className="space-y-2 text-white/80">
+                    <p><span className="text-white/50">Diamante:</span> {result.diamond}</p>
+                    <p><span className="text-white/50">Comprador:</span> {result.customer_name}</p>
+                    <p><span className="text-white/50">Email:</span> {result.customer_email}</p>
+                    <p><span className="text-white/50">Plan:</span> {result.plan}</p>
+                    <p><span className="text-white/50">Pagó:</span> ${result.amount_paid?.toLocaleString()} COP</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <p className="text-yellow-400">El número {result.diamond} no ha sido comprado aún.</p>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
