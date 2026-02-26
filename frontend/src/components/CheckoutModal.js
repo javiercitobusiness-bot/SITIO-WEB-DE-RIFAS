@@ -195,6 +195,27 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="discount_code">Código de descuento (opcional)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="discount_code"
+                name="discount_code"
+                type="text"
+                placeholder="CODIGO"
+                value={formData.discount_code}
+                onChange={handleChange}
+                className="bg-slate-800 border-slate-700 text-white uppercase"
+              />
+              <Button type="button" onClick={validateDiscount} variant="outline" className="border-cyan-500 text-cyan-400">
+                Aplicar
+              </Button>
+            </div>
+            {discountApplied && (
+              <p className="text-green-400 text-sm">✓ Descuento {discountApplied}% aplicado - Pagas: {formatCurrency(finalPrice)}</p>
+            )}
+          </div>
+
           <div className="pt-4 flex gap-3">
             <Button
               type="button"
