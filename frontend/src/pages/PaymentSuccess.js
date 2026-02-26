@@ -18,17 +18,29 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     const processPayment = async () => {
-      const reference = searchParams.get('reference') || localStorage.getItem('lastPurchaseReference');
+      // Intentar obtener referencia de múltiples fuentes
+      let reference = searchParams.get('reference') || 
+                      searchParams.get('external_reference') ||
+                      searchParams.get('preference_id') ||
+                      localStorage.getItem('lastPurchaseReference');
+      
+      console.log('All URL params:', Object.fromEntries(searchParams.entries()));
+      console.log('Reference found:', reference);
+      console.log('LocalStorage ref:', localStorage.getItem('lastPurchaseReference'));
       
       if (reference) {
         try {
           const response = await axios.post(`${API_URL}/api/verify-and-process/${reference}`);
+          console.log('Process response:', response.data);
           setResult(response.data);
           localStorage.removeItem('lastPurchaseReference');
         } catch (error) {
           console.error('Error processing:', error);
-          setResult({ status: 'error' });
+          setResult({ status: 'error', message: error.message });
         }
+      } else {
+        console.log('No reference found');
+        setResult({ status: 'no_reference' });
       }
       setProcessing(false);
     };
