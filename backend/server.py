@@ -167,13 +167,25 @@ async def create_purchase(request: PurchaseRequest):
                 detail=f"Not enough diamonds available. Available: {stats['available_diamonds']}"
             )
         
-        payment_data = await bold_service.create_payment_link(
-            amount=final_amount,
-            description=f"{DINAMICA_NAME} - {plan.name}" + (f" (Descuento {discount_applied}%)" if discount_applied else ""),
-            customer_email=request.customer_email,
-            reference=reference,
-            customer_name=request.customer_name
-        )
+        # Seleccionar pasarela de pago
+        payment_method = request.payment_method or "bold"
+        
+        if payment_method == "mercadopago":
+            payment_data = await mercadopago_service.create_payment_link(
+                amount=final_amount,
+                description=f"{DINAMICA_NAME} - {plan.name}" + (f" (Descuento {discount_applied}%)" if discount_applied else ""),
+                customer_email=request.customer_email,
+                reference=reference,
+                customer_name=request.customer_name
+            )
+        else:
+            payment_data = await bold_service.create_payment_link(
+                amount=final_amount,
+                description=f"{DINAMICA_NAME} - {plan.name}" + (f" (Descuento {discount_applied}%)" if discount_applied else ""),
+                customer_email=request.customer_email,
+                reference=reference,
+                customer_name=request.customer_name
+            )
         
         await db.purchases.insert_one({
             "reference": reference,
@@ -187,6 +199,7 @@ async def create_purchase(request: PurchaseRequest):
             "discount_percent": discount_applied,
             "diamonds_count": plan.diamonds_count,
             "status": "PENDING",
+            "payment_method": payment_method,
             "payment_link": payment_data.get("url", ""),
             "created_at": payment_data.get("created_at")
         })
