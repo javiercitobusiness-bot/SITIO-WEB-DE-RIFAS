@@ -132,6 +132,12 @@ export default function PaymentSuccess() {
                       <p className="text-white/70 text-sm mt-2">
                         No hemos confirmado tu pago aún. Si completaste el pago, espera unos minutos y recibirás tus diamantes por correo.
                       </p>
+                      <div className="mt-3 flex items-center justify-center gap-2">
+                        <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                          <span className="text-orange-400 font-bold">{countdown}</span>
+                        </div>
+                        <span className="text-white/50 text-sm">segundos para verificar nuevamente</span>
+                      </div>
                       <p className="text-white/50 text-xs mt-3">
                         Si no completaste el pago, puedes volver a intentarlo.
                       </p>
