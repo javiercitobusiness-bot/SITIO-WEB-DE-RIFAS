@@ -1015,24 +1015,52 @@ async def sync_inventory(request: Request):
             for diamond in assignment.get("diamonds", []):
                 assigned_diamonds.add(diamond)
         
-        # Resetear todo el inventario a disponible
+        total_assigned = len(assigned_diamonds)
+        total_diamonds = 1000000  # Total de diamantes
+        
+        # Sincronizar colección sold_diamonds
+        # Primero, limpiar sold_diamonds
+        await db.sold_diamonds.delete_many({})
+        
+        # Insertar solo los diamantes realmente asignados
+        if total_assigned > 0:
+            sold_docs = [{"diamond": d} for d in assigned_diamonds]
+            await db.sold_diamonds.insert_many(sold_docs)
+        
+        # Actualizar la colección inventory principal
+        sold_percentage = round((total_assigned / total_diamonds) * 100, 2)
+        await db.inventory.update_one(
+            {"_id": "main"},
+            {
+                "$set": {
+                    "total": total_diamonds,
+                    "sold": total_assigned,
+                    "available": total_diamonds - total_assigned,
+                    "sold_percentage": sold_percentage
+                }
+            },
+            upsert=True
+        )
+        
+        # También actualizar event_inventory si existe
         await db.event_inventory.update_many(
             {},
             {"$set": {"status": "available", "assigned_to": None, "assigned_at": None}}
         )
         
-        # Marcar solo los diamantes realmente asignados como vendidos
         for diamond in assigned_diamonds:
             await db.event_inventory.update_one(
                 {"diamond_number": diamond},
                 {"$set": {"status": "sold"}}
             )
         
-        logger.info(f"Inventory synced: {len(assigned_diamonds)} diamonds marked as sold")
+        logger.info(f"Inventory synced: {total_assigned} diamonds marked as sold")
         return {
             "status": "success", 
-            "message": f"Inventario sincronizado. {len(assigned_diamonds)} diamantes vendidos.",
-            "total_assigned": len(assigned_diamonds)
+            "message": f"Inventario sincronizado. {total_assigned} diamantes vendidos.",
+            "total_assigned": total_assigned,
+            "available": total_diamonds - total_assigned,
+            "sold_percentage": sold_percentage
         }
         
     except Exception as e:
