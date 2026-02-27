@@ -1111,6 +1111,19 @@ function CustomersView() {
     }
   };
 
+  const deleteCustomer = async (email) => {
+    if (window.confirm(`¿Eliminar cliente ${email} y todas sus compras? Esta acción no se puede deshacer.`)) {
+      try {
+        await api.delete(`/api/admin/customer/${encodeURIComponent(email)}`);
+        toast.success('Cliente eliminado');
+        fetchCustomers();
+        setSelectedCustomer(null);
+      } catch (error) {
+        toast.error('Error al eliminar');
+      }
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-64"><RefreshCw className="w-8 h-8 animate-spin text-cyan-400" /></div>;
   }
