@@ -1647,6 +1647,163 @@ function PaymentGatewaysView() {
   );
 }
 
+// Influencer Codes View
+function InfluencerCodesView() {
+  const [codes, setCodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newCode, setNewCode] = useState({
+    code: '', influencer_name: '', extra_diamonds: 5, max_uses: 0
+  });
+
+  useEffect(() => { fetchCodes(); }, []);
+
+  const fetchCodes = async () => {
+    try {
+      const response = await api.get('/api/admin/influencer-codes');
+      setCodes(response.data.codes || []);
+    } catch (error) {
+      console.log('No codes yet');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addCode = async () => {
+    if (newCode.extra_diamonds % 5 !== 0) {
+      toast.error('Los diamantes deben ser múltiplo de 5');
+      return;
+    }
+    try {
+      await api.post('/api/admin/influencer-codes', newCode);
+      toast.success('Código creado');
+      setShowAddModal(false);
+      setNewCode({ code: '', influencer_name: '', extra_diamonds: 5, max_uses: 0 });
+      fetchCodes();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al crear código');
+    }
+  };
+
+  const deleteCode = async (code) => {
+    if (window.confirm('¿Eliminar este código?')) {
+      try {
+        await api.delete(`/api/admin/influencer-codes/${code}`);
+        toast.success('Código eliminado');
+        fetchCodes();
+      } catch (error) {
+        toast.error('Error al eliminar');
+      }
+    }
+  };
+
+  if (loading) return <div className="flex items-center justify-center h-64"><RefreshCw className="w-8 h-8 animate-spin text-cyan-400" /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Códigos de Influencers</h2>
+        <Button onClick={() => setShowAddModal(true)} className="bg-cyan-600 hover:bg-cyan-700">
+          + Nuevo Código
+        </Button>
+      </div>
+
+      <div className="grid gap-4">
+        {codes.length === 0 ? (
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardContent className="py-12 text-center">
+              <p className="text-white/60">No hay códigos de influencers. Crea el primero.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          codes.map((c) => (
+            <Card key={c.code} className="bg-slate-800/50 border-slate-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-cyan-400 font-bold font-mono text-lg">{c.code}</p>
+                    <p className="text-white/60 text-sm">{c.influencer_name || 'Sin nombre'}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-green-400 font-bold">+{c.extra_diamonds}</p>
+                    <p className="text-white/50 text-xs">diamantes extra</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white">{c.uses || 0}</p>
+                    <p className="text-white/50 text-xs">{c.max_uses > 0 ? `/ ${c.max_uses} usos` : 'Ilimitado'}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge className={c.active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}>
+                      {c.active ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                    <Button variant="destructive" size="sm" onClick={() => deleteCode(c.code)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Nuevo Código de Influencer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Código (lo que escribirá el cliente)</Label>
+              <Input 
+                value={newCode.code} 
+                onChange={(e) => setNewCode({...newCode, code: e.target.value.toUpperCase()})} 
+                className="bg-slate-800 border-slate-700 text-white uppercase" 
+                placeholder="INFLUENCER2024"
+              />
+            </div>
+            <div>
+              <Label>Nombre del Influencer</Label>
+              <Input 
+                value={newCode.influencer_name} 
+                onChange={(e) => setNewCode({...newCode, influencer_name: e.target.value})} 
+                className="bg-slate-800 border-slate-700 text-white" 
+                placeholder="@username"
+              />
+            </div>
+            <div>
+              <Label>Diamantes Extra (múltiplo de 5)</Label>
+              <div className="flex gap-2">
+                {[5, 10, 15, 20, 25, 30].map(n => (
+                  <Button 
+                    key={n} 
+                    type="button"
+                    variant={newCode.extra_diamonds === n ? "default" : "outline"}
+                    className={newCode.extra_diamonds === n ? "bg-cyan-600" : "border-slate-600"}
+                    onClick={() => setNewCode({...newCode, extra_diamonds: n})}
+                  >
+                    +{n}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Límite de usos (0 = ilimitado)</Label>
+              <Input 
+                type="number"
+                value={newCode.max_uses} 
+                onChange={(e) => setNewCode({...newCode, max_uses: parseInt(e.target.value) || 0})} 
+                className="bg-slate-800 border-slate-700 text-white" 
+              />
+            </div>
+            <Button onClick={addCode} className="w-full bg-cyan-600">Crear Código</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 // Testimonials View
 function TestimonialsView() {
   const [testimonials, setTestimonials] = useState([]);
