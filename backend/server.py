@@ -400,7 +400,7 @@ async def test_email(email: str):
 
 @api_router.post("/verify-and-process/{reference}")
 async def verify_and_process_payment(reference: str):
-    """Verificar pago y procesar automáticamente"""
+    """Verificar pago y procesar automáticamente SOLO si el pago fue confirmado"""
     try:
         logger.info(f"Verifying payment for reference: {reference}")
         
@@ -408,17 +408,7 @@ async def verify_and_process_payment(reference: str):
         purchase = await db.purchases.find_one({"reference": {"$regex": reference}})
         
         if not purchase:
-            # Intentar buscar por preference_id de MercadoPago
             purchase = await db.purchases.find_one({"payment_link": {"$regex": reference}})
-        
-        if not purchase:
-            # Buscar la compra más reciente pendiente (fallback)
-            purchase = await db.purchases.find_one(
-                {"status": "PENDING"},
-                sort=[("created_at", -1)]
-            )
-            if purchase:
-                logger.info(f"Found most recent pending purchase: {purchase.get('reference')}")
         
         if not purchase:
             logger.warning(f"Purchase not found: {reference}")
@@ -435,41 +425,12 @@ async def verify_and_process_payment(reference: str):
                 "amount": purchase.get("amount")
             }
         
-        # Procesar la compra
-        diamonds = await inventory_service.assign_diamonds(purchase["diamonds_count"])
-        
-        await db.diamond_assignments.insert_one({
-            "reference": purchase["reference"],
-            "customer_email": purchase["customer_email"],
-            "customer_name": purchase["customer_name"],
-            "diamonds": diamonds,
-            "plan": purchase["plan"],
-            "amount_paid": purchase["amount"],
-            "assigned_at": datetime.now(timezone.utc).isoformat()
-        })
-        
-        await db.purchases.update_one(
-            {"reference": purchase["reference"]},
-            {"$set": {"status": "APPROVED", "diamonds_assigned": True}}
-        )
-        
-        # Intentar enviar email (no bloquea si falla)
-        try:
-            await email_service.send_diamonds_email(
-                recipient_email=purchase["customer_email"],
-                recipient_name=purchase["customer_name"],
-                diamonds=diamonds,
-                plan_name=PAYMENT_PLANS[purchase["plan"]].name,
-                amount_paid=purchase["amount"]
-            )
-            logger.info(f"Email sent to {purchase['customer_email']}")
-        except Exception as email_error:
-            logger.error(f"Email failed but diamonds assigned: {email_error}")
-        
-        logger.info(f"Payment auto-processed: {purchase['reference']}")
+        # IMPORTANTE: No procesar automáticamente
+        # El pago debe ser confirmado por el webhook de BOLD/MercadoPago
+        # Mostrar mensaje de que el pago está siendo verificado
         return {
-            "status": "processed",
-            "diamonds": diamonds,
+            "status": "pending_verification",
+            "message": "Tu pago está siendo verificado. Recibirás tus diamantes por correo en unos minutos.",
             "customer_name": purchase.get("customer_name"),
             "plan": purchase.get("plan"),
             "amount": purchase.get("amount")
