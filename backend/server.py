@@ -248,8 +248,26 @@ async def create_purchase(request: PurchaseRequest):
                     DISCOUNT_CODES[code]["used"] += 1
                     logger.info(f"Discount {code} applied: {discount_applied}% off")
         
+        # Aplicar diamantes extra por código de influencer
+        extra_diamonds = 0
+        influencer_name = ""
+        if request.influencer_code:
+            inf_code = await db.influencer_codes.find_one({"code": request.influencer_code.upper(), "active": True})
+            if inf_code:
+                if inf_code.get("max_uses", 0) == 0 or inf_code.get("uses", 0) < inf_code.get("max_uses"):
+                    extra_diamonds = inf_code.get("extra_diamonds", 0)
+                    influencer_name = inf_code.get("influencer_name", "")
+                    # Incrementar uso del código
+                    await db.influencer_codes.update_one(
+                        {"code": request.influencer_code.upper()},
+                        {"$inc": {"uses": 1}}
+                    )
+                    logger.info(f"Influencer code {request.influencer_code} applied: +{extra_diamonds} diamonds")
+        
+        total_diamonds = plan.diamonds_count + extra_diamonds
+        
         stats = await inventory_service.get_inventory_stats()
-        if stats["available_diamonds"] < plan.diamonds_count:
+        if stats["available_diamonds"] < total_diamonds:
             raise HTTPException(
                 status_code=400,
                 detail=f"Not enough diamonds available. Available: {stats['available_diamonds']}"
@@ -258,10 +276,16 @@ async def create_purchase(request: PurchaseRequest):
         # Seleccionar pasarela de pago
         payment_method = request.payment_method or "bold"
         
+        description = f"{DINAMICA_NAME} - {plan.name}"
+        if discount_applied:
+            description += f" (Descuento {discount_applied}%)"
+        if extra_diamonds:
+            description += f" (+{extra_diamonds} diamantes bonus)"
+        
         if payment_method == "mercadopago":
             payment_data = await mercadopago_service.create_payment_link(
                 amount=final_amount,
-                description=f"{DINAMICA_NAME} - {plan.name}" + (f" (Descuento {discount_applied}%)" if discount_applied else ""),
+                description=description,
                 customer_email=request.customer_email,
                 reference=reference,
                 customer_name=request.customer_name
@@ -269,7 +293,7 @@ async def create_purchase(request: PurchaseRequest):
         else:
             payment_data = await bold_service.create_payment_link(
                 amount=final_amount,
-                description=f"{DINAMICA_NAME} - {plan.name}" + (f" (Descuento {discount_applied}%)" if discount_applied else ""),
+                description=description,
                 customer_email=request.customer_email,
                 reference=reference,
                 customer_name=request.customer_name
