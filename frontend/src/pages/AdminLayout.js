@@ -73,6 +73,7 @@ const formatCurrency = (amount) => {
 function DashboardView() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -87,6 +88,19 @@ function DashboardView() {
       toast.error('Error al cargar estadísticas');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncInventory = async () => {
+    setSyncing(true);
+    try {
+      const response = await api.post('/api/admin/sync-inventory');
+      toast.success(response.data.message);
+      fetchStats(); // Recargar estadísticas
+    } catch (error) {
+      toast.error('Error al sincronizar');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -107,7 +121,18 @@ function DashboardView() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+        <Button 
+          onClick={syncInventory} 
+          disabled={syncing}
+          variant="outline" 
+          className="border-cyan-500 text-cyan-400"
+        >
+          {syncing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+          Sincronizar Inventario
+        </Button>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, i) => (
