@@ -104,19 +104,25 @@ export default function PaymentSuccess() {
                       ¡Tienes {diamonds.length} diamantes!
                     </p>
                   ) : result?.status === 'pending_verification' ? (
-                    <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                      <p className="text-blue-400 font-medium">⏳ Verificando tu pago...</p>
+                    <div className="mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                      <p className="text-orange-400 font-medium text-lg">⏳ Pago Pendiente</p>
                       <p className="text-white/70 text-sm mt-2">
-                        Tu pago está siendo verificado. Recibirás tus diamantes por correo electrónico en unos minutos.
+                        No hemos confirmado tu pago aún. Si completaste el pago, espera unos minutos y recibirás tus diamantes por correo.
                       </p>
-                      <p className="text-white/50 text-xs mt-2">
-                        Si ya realizaste el pago, espera unos momentos. Si no lo completaste, regresa e intenta de nuevo.
+                      <p className="text-white/50 text-xs mt-3">
+                        Si no completaste el pago, puedes volver a intentarlo.
                       </p>
+                      <Button 
+                        onClick={() => window.location.href = '/'}
+                        className="mt-4 bg-orange-500 hover:bg-orange-600"
+                      >
+                        Volver a intentar
+                      </Button>
                     </div>
                   ) : result?.status === 'not_found' || result?.status === 'no_reference' ? (
                     <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                      <p className="text-yellow-400">Tu pago fue procesado. Revisa tu correo electrónico para ver tus diamantes.</p>
-                      <p className="text-white/50 text-sm mt-2">Si no recibes el correo en 5 minutos, contáctanos.</p>
+                      <p className="text-yellow-400">No encontramos información de tu compra.</p>
+                      <p className="text-white/50 text-sm mt-2">Si realizaste un pago, revisa tu correo o contáctanos.</p>
                     </div>
                   ) : null}
                 </div>
