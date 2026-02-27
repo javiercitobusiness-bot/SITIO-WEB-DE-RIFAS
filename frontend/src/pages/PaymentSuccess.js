@@ -14,6 +14,7 @@ export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const [processing, setProcessing] = useState(true);
   const [result, setResult] = useState(null);
+  const [countdown, setCountdown] = useState(60);
   const diamondsRef = useRef(null);
 
   useEffect(() => {
@@ -47,6 +48,18 @@ export default function PaymentSuccess() {
 
     processPayment();
   }, [searchParams]);
+
+  // Contador y recarga automática cuando el pago está pendiente
+  useEffect(() => {
+    if (result?.status === 'pending_verification' && countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (result?.status === 'pending_verification' && countdown === 0) {
+      window.location.reload();
+    }
+  }, [result, countdown]);
 
   const downloadAsImage = async () => {
     if (diamondsRef.current) {
