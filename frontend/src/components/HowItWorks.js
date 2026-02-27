@@ -4,15 +4,15 @@ import { Calendar, Calculator, RefreshCw, Gift, Trophy } from 'lucide-react';
 
 export default function HowItWorks() {
   const lotteryCalendar = [
-    { date: '9 DE MARZO', lotteries: ['Lotería del Tolima'], hasLottery: true },
-    { date: '10 DE MARZO', lotteries: ['Sin sorteo'], hasLottery: false },
-    { date: '11 DE MARZO', lotteries: ['Lotería del Meta', 'Lotería de Manizales'], hasLottery: true },
-    { date: '12 DE MARZO', lotteries: ['Lotería del Quindío', 'Lotería de Bogotá'], hasLottery: true },
-    { date: '13 DE MARZO', lotteries: ['Lotería de Medellín', 'Lotería del Risaralda'], hasLottery: true },
-    { date: '14 DE MARZO', lotteries: ['Lotería de Boyacá'], hasLottery: true },
-    { date: '15 DE MARZO', lotteries: ['Sin sorteo'], hasLottery: false },
-    { date: '16 DE MARZO', lotteries: ['Lotería del Tolima'], hasLottery: true },
-    { date: '17 DE MARZO', lotteries: ['Sin sorteo'], hasLottery: false },
+    { date: '9 DE MARZO', lotteries: ['Lotería del Quindío'], hasLottery: true },
+    { date: '10 DE MARZO', lotteries: ['Lotería de Boyacá'], hasLottery: true },
+    { date: '11 DE MARZO', lotteries: ['Lotería del Risaralda'], hasLottery: true },
+    { date: '12 DE MARZO', lotteries: ['Lotería de Manizales'], hasLottery: true },
+    { date: '13 DE MARZO', lotteries: ['Lotería del Meta'], hasLottery: true },
+    { date: '14 DE MARZO', lotteries: ['Lotería del Tolima'], hasLottery: true },
+    { date: '15 DE MARZO', lotteries: ['Lotería de Bogotá'], hasLottery: true },
+    { date: '16 DE MARZO', lotteries: ['Lotería del Quindío'], hasLottery: true },
+    { date: '17 DE MARZO', lotteries: ['Lotería de Boyacá'], hasLottery: true },
     { date: '18 DE MARZO', lotteries: ['Lotería de Medellín', 'Premio Final'], hasLottery: true, isFinal: true },
   ];
 
