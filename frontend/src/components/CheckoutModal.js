@@ -16,12 +16,14 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
     customer_email: '',
     customer_phone: '',
     discount_code: '',
+    influencer_code: '',
     payment_method: 'bold'
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [discountApplied, setDiscountApplied] = useState(null);
   const [finalPrice, setFinalPrice] = useState(null);
+  const [extraDiamonds, setExtraDiamonds] = useState(0);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-CO', {
