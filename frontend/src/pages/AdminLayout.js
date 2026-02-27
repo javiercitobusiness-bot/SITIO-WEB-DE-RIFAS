@@ -2015,6 +2015,7 @@ export default function AdminLayout() {
     { path: '/admin/dashboard/purchases', icon: CreditCard, label: 'Compras' },
     { path: '/admin/dashboard/winners', icon: Search, label: 'Buscar Ganadores' },
     { path: '/admin/dashboard/testimonials', icon: Users, label: 'Testimonios' },
+    { path: '/admin/dashboard/influencers', icon: Star, label: 'Códigos Influencers' },
     { path: '/admin/dashboard/customers', icon: Users, label: 'Clientes' },
     { path: '/admin/dashboard/payments', icon: DollarSign, label: 'Pasarelas' },
     { path: '/admin/dashboard/settings', icon: Settings, label: 'Configuración' },
