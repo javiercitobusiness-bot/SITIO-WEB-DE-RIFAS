@@ -360,6 +360,11 @@ export default function Home() {
         onClose={() => setShowNumbers(false)}
         result={purchaseResult}
       />
+
+      {/* Botón flotante de comprar */}
+      <FloatingBuyButton onClick={() => {
+        document.getElementById('planes')?.scrollIntoView({ behavior: 'smooth' });
+      }} />
     </div>
   );
 }
