@@ -886,6 +886,44 @@ async def get_admin_purchases(request: Request, skip: int = 0, limit: int = 50):
         logger.error(f"Error getting purchases: {str(e)}")
         raise HTTPException(status_code=500, detail="Error obteniendo compras")
 
+@api_router.post("/admin/sync-inventory")
+async def sync_inventory(request: Request):
+    """Sincronizar inventario con asignaciones reales"""
+    await get_current_admin(request)
+    
+    try:
+        # Obtener todos los diamantes realmente asignados
+        all_assignments = await db.diamond_assignments.find({}).to_list(1000)
+        assigned_diamonds = set()
+        
+        for assignment in all_assignments:
+            for diamond in assignment.get("diamonds", []):
+                assigned_diamonds.add(diamond)
+        
+        # Resetear todo el inventario a disponible
+        await db.event_inventory.update_many(
+            {},
+            {"$set": {"status": "available", "assigned_to": None, "assigned_at": None}}
+        )
+        
+        # Marcar solo los diamantes realmente asignados como vendidos
+        for diamond in assigned_diamonds:
+            await db.event_inventory.update_one(
+                {"diamond_number": diamond},
+                {"$set": {"status": "sold"}}
+            )
+        
+        logger.info(f"Inventory synced: {len(assigned_diamonds)} diamonds marked as sold")
+        return {
+            "status": "success", 
+            "message": f"Inventario sincronizado. {len(assigned_diamonds)} diamantes vendidos.",
+            "total_assigned": len(assigned_diamonds)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.delete("/admin/customer/{email}")
 async def delete_customer(request: Request, email: str):
     """Eliminar cliente y devolver sus diamantes al inventario"""
