@@ -54,6 +54,24 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
     }
   };
 
+  const validateInfluencerCode = async () => {
+    if (!formData.influencer_code) return;
+    try {
+      const response = await axios.post(`${API_URL}/api/validate-influencer-code`, {
+        code: formData.influencer_code
+      });
+      if (response.data.valid) {
+        setExtraDiamonds(response.data.extra_diamonds);
+        toast.success(`¡Código de ${response.data.influencer_name || 'influencer'} aplicado! +${response.data.extra_diamonds} diamantes extra`);
+      } else {
+        setExtraDiamonds(0);
+        toast.error(response.data.message || 'Código inválido');
+      }
+    } catch (error) {
+      toast.error('Error al validar código');
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
