@@ -314,6 +314,9 @@ export default function Home() {
         {/* Testimonials */}
         <Testimonials />
 
+        {/* How It Works */}
+        <HowItWorks />
+
         {/* How it Works */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
