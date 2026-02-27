@@ -123,6 +123,94 @@ DISCOUNT_CODES = {
     "RECUPERA80": {"discount_percent": 80, "max_uses": 1, "used": 0}
 }
 
+# Códigos de influencers (diamantes extra)
+@api_router.get("/admin/influencer-codes")
+async def get_influencer_codes(request: Request):
+    """Obtener todos los códigos de influencers"""
+    await get_current_admin(request)
+    codes = await db.influencer_codes.find({}, {"_id": 0}).to_list(100)
+    return {"codes": codes}
+
+@api_router.post("/admin/influencer-codes")
+async def create_influencer_code(request: Request):
+    """Crear código de influencer"""
+    await get_current_admin(request)
+    body = await request.json()
+    
+    code_name = body.get("code", "").upper()
+    extra_diamonds = int(body.get("extra_diamonds", 5))
+    
+    # Validar múltiplo de 5
+    if extra_diamonds % 5 != 0:
+        raise HTTPException(status_code=400, detail="Los diamantes deben ser múltiplo de 5")
+    
+    code = {
+        "code": code_name,
+        "influencer_name": body.get("influencer_name", ""),
+        "extra_diamonds": extra_diamonds,
+        "uses": 0,
+        "max_uses": body.get("max_uses", 0),  # 0 = ilimitado
+        "active": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Verificar si ya existe
+    existing = await db.influencer_codes.find_one({"code": code_name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Este código ya existe")
+    
+    await db.influencer_codes.insert_one(code)
+    return {"status": "success", "code": code}
+
+@api_router.put("/admin/influencer-codes/{code}")
+async def update_influencer_code(request: Request, code: str):
+    """Actualizar código de influencer"""
+    await get_current_admin(request)
+    body = await request.json()
+    
+    extra_diamonds = int(body.get("extra_diamonds", 5))
+    if extra_diamonds % 5 != 0:
+        raise HTTPException(status_code=400, detail="Los diamantes deben ser múltiplo de 5")
+    
+    await db.influencer_codes.update_one(
+        {"code": code.upper()},
+        {"$set": {
+            "influencer_name": body.get("influencer_name"),
+            "extra_diamonds": extra_diamonds,
+            "max_uses": body.get("max_uses", 0),
+            "active": body.get("active", True)
+        }}
+    )
+    return {"status": "success"}
+
+@api_router.delete("/admin/influencer-codes/{code}")
+async def delete_influencer_code(request: Request, code: str):
+    """Eliminar código de influencer"""
+    await get_current_admin(request)
+    await db.influencer_codes.delete_one({"code": code.upper()})
+    return {"status": "success"}
+
+@api_router.post("/validate-influencer-code")
+async def validate_influencer_code(request: Request):
+    """Validar código de influencer y obtener diamantes extra"""
+    body = await request.json()
+    code = body.get("code", "").upper()
+    
+    influencer_code = await db.influencer_codes.find_one({"code": code, "active": True})
+    
+    if influencer_code:
+        # Verificar límite de usos
+        if influencer_code.get("max_uses", 0) > 0 and influencer_code.get("uses", 0) >= influencer_code.get("max_uses"):
+            return {"valid": False, "message": "Código agotado"}
+        
+        return {
+            "valid": True,
+            "extra_diamonds": influencer_code.get("extra_diamonds", 0),
+            "influencer_name": influencer_code.get("influencer_name", "")
+        }
+    
+    return {"valid": False}
+
 @api_router.post("/validate-discount")
 async def validate_discount(request: Request):
     """Validar código de descuento"""
