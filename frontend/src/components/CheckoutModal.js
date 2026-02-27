@@ -237,6 +237,27 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="influencer_code">Código de influencer (diamantes extra)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="influencer_code"
+                name="influencer_code"
+                type="text"
+                placeholder="INFLUENCER"
+                value={formData.influencer_code}
+                onChange={handleChange}
+                className="bg-slate-800 border-slate-700 text-white uppercase"
+              />
+              <Button type="button" onClick={validateInfluencerCode} variant="outline" className="border-green-500 text-green-400">
+                Aplicar
+              </Button>
+            </div>
+            {extraDiamonds > 0 && (
+              <p className="text-green-400 text-sm">✓ ¡+{extraDiamonds} diamantes extra! Total: {plan?.diamonds + extraDiamonds} diamantes</p>
+            )}
+          </div>
+
           {/* Selección de método de pago */}
           <div className="space-y-3">
             <Label>Método de pago</Label>
