@@ -105,11 +105,11 @@ export default function PaymentSuccess() {
                 <div className="text-center mb-8">
                   <div className="relative inline-block mb-4">
                     <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${
-                      diamonds.length > 0 
+                      diamonds.length > 0 || result?.status === 'processed'
                         ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' 
                         : 'bg-gradient-to-br from-orange-500/20 to-yellow-500/20'
                     }`}>
-                      {diamonds.length > 0 ? (
+                      {diamonds.length > 0 || result?.status === 'processed' ? (
                         <CheckCircle className="w-12 h-12 text-green-400" />
                       ) : (
                         <Loader2 className="w-12 h-12 text-orange-400" />
@@ -117,7 +117,7 @@ export default function PaymentSuccess() {
                     </div>
                   </div>
                   <h1 className="text-3xl font-bold text-white mb-2">
-                    {diamonds.length > 0 ? '¡Compra Exitosa!' : 'Pago Pendiente'}
+                    {diamonds.length > 0 || result?.status === 'processed' || result?.status === 'already_processed' ? '¡Compra Exitosa!' : 'Pago Pendiente'}
                   </h1>
                   {result?.customer_name && (
                     <p className="text-white/70">Gracias, {result.customer_name}</p>
