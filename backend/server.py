@@ -515,7 +515,7 @@ async def test_email(email: str):
 
 @api_router.post("/verify-and-process/{reference}")
 async def verify_and_process_payment(reference: str):
-    """Verificar pago y procesar automáticamente SOLO si el pago fue confirmado"""
+    """Verificar pago y procesar automáticamente si el pago fue confirmado por la pasarela"""
     try:
         logger.info(f"Verifying payment for reference: {reference}")
         
@@ -540,9 +540,75 @@ async def verify_and_process_payment(reference: str):
                 "amount": purchase.get("amount")
             }
         
-        # IMPORTANTE: No procesar automáticamente
-        # El pago debe ser confirmado por el webhook de BOLD/MercadoPago
-        # Mostrar mensaje de que el pago está siendo verificado
+        # Verificar directamente con la pasarela si el pago fue aprobado
+        payment_method = purchase.get("payment_method", "bold")
+        payment_verified = False
+        
+        try:
+            if payment_method == "mercadopago":
+                # Para Mercado Pago, verificar si hay un pago asociado
+                # (El webhook puede haber fallado pero el pago está hecho)
+                logger.info(f"Checking MercadoPago status for {purchase['reference']}")
+                # Mercado Pago usa preference_id, intentamos verificar
+                payment_link = purchase.get("payment_link", "")
+                if payment_link:
+                    # Extraer preference_id de la URL
+                    import re
+                    match = re.search(r'pref_id=([^&]+)', payment_link)
+                    if match:
+                        pref_id = match.group(1)
+                        logger.info(f"Found preference_id: {pref_id}")
+            else:
+                # Para BOLD, verificar estado del payment link
+                payment_link_id = purchase.get("payment_link_id")
+                if payment_link_id:
+                    logger.info(f"Checking BOLD payment status for link_id: {payment_link_id}")
+                    status_data = await bold_service.get_payment_status(payment_link_id)
+                    if status_data.get("payment_status") in ["APPROVED", "approved", "SUCCESSFUL"]:
+                        payment_verified = True
+                        logger.info(f"BOLD payment verified as approved for {purchase['reference']}")
+        except Exception as e:
+            logger.warning(f"Could not verify payment status directly: {str(e)}")
+        
+        # Si la pasarela confirma que el pago fue aprobado, procesarlo
+        if payment_verified:
+            logger.info(f"Processing verified payment: {purchase['reference']}")
+            
+            diamonds = await inventory_service.assign_diamonds(purchase["diamonds_count"])
+            
+            await db.diamond_assignments.insert_one({
+                "reference": purchase["reference"],
+                "customer_email": purchase["customer_email"],
+                "customer_name": purchase["customer_name"],
+                "diamonds": diamonds,
+                "plan": purchase["plan"],
+                "amount_paid": purchase["amount"],
+                "assigned_at": datetime.now(timezone.utc).isoformat()
+            })
+            
+            await db.purchases.update_one(
+                {"reference": purchase["reference"]},
+                {"$set": {"status": "APPROVED", "diamonds_assigned": True}}
+            )
+            
+            # Enviar email
+            await email_service.send_diamonds_email(
+                recipient_email=purchase["customer_email"],
+                recipient_name=purchase["customer_name"],
+                diamonds=diamonds,
+                plan_name=PAYMENT_PLANS[purchase["plan"]].name,
+                amount_paid=purchase["amount"]
+            )
+            
+            return {
+                "status": "processed",
+                "diamonds": diamonds,
+                "customer_name": purchase.get("customer_name"),
+                "plan": purchase.get("plan"),
+                "amount": purchase.get("amount")
+            }
+        
+        # Si no se pudo verificar, mostrar mensaje de pendiente
         return {
             "status": "pending_verification",
             "message": "Tu pago está siendo verificado. Recibirás tus diamantes por correo en unos minutos.",
@@ -553,6 +619,8 @@ async def verify_and_process_payment(reference: str):
         
     except Exception as e:
         logger.error(f"Error verifying payment: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return {"status": "error", "message": str(e)}
 
 @api_router.post("/admin/process-pending-payments")
