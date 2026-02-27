@@ -7,6 +7,7 @@ import PricingPlans from '../components/PricingPlans';
 import PrizeInfo from '../components/PrizeInfo';
 import Testimonials from '../components/Testimonials';
 import HowItWorks from '../components/HowItWorks';
+import FloatingBuyButton from '../components/FloatingBuyButton';
 import CheckoutModal from '../components/CheckoutModal';
 import NumbersModal from '../components/NumbersModal';
 import { Progress } from '../components/ui/progress';
