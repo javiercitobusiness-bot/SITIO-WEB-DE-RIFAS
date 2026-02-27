@@ -886,6 +886,44 @@ async def get_admin_purchases(request: Request, skip: int = 0, limit: int = 50):
         logger.error(f"Error getting purchases: {str(e)}")
         raise HTTPException(status_code=500, detail="Error obteniendo compras")
 
+@api_router.delete("/admin/customer/{email}")
+async def delete_customer(request: Request, email: str):
+    """Eliminar cliente y todas sus compras/asignaciones"""
+    await get_current_admin(request)
+    
+    try:
+        # Eliminar asignaciones de diamantes
+        await db.diamond_assignments.delete_many({"customer_email": email})
+        
+        # Eliminar compras
+        await db.purchases.delete_many({"customer_email": email})
+        
+        logger.info(f"Customer deleted: {email}")
+        return {"status": "success", "message": f"Cliente {email} eliminado"}
+        
+    except Exception as e:
+        logger.error(f"Error deleting customer: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/admin/purchase/{reference}")
+async def delete_purchase(request: Request, reference: str):
+    """Eliminar una compra específica"""
+    await get_current_admin(request)
+    
+    try:
+        # Eliminar asignación de diamantes si existe
+        await db.diamond_assignments.delete_one({"reference": reference})
+        
+        # Eliminar la compra
+        await db.purchases.delete_one({"reference": reference})
+        
+        logger.info(f"Purchase deleted: {reference}")
+        return {"status": "success", "message": "Compra eliminada"}
+        
+    except Exception as e:
+        logger.error(f"Error deleting purchase: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/admin/customers")
 async def get_admin_customers(request: Request):
     await get_current_admin(request)
