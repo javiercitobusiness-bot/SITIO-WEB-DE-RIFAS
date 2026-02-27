@@ -103,6 +103,16 @@ export default function PaymentSuccess() {
                     <p className="text-lg text-cyan-400 font-semibold mt-2">
                       ¡Tienes {diamonds.length} diamantes!
                     </p>
+                  ) : result?.status === 'pending_verification' ? (
+                    <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                      <p className="text-blue-400 font-medium">⏳ Verificando tu pago...</p>
+                      <p className="text-white/70 text-sm mt-2">
+                        Tu pago está siendo verificado. Recibirás tus diamantes por correo electrónico en unos minutos.
+                      </p>
+                      <p className="text-white/50 text-xs mt-2">
+                        Si ya realizaste el pago, espera unos momentos. Si no lo completaste, regresa e intenta de nuevo.
+                      </p>
+                    </div>
                   ) : result?.status === 'not_found' || result?.status === 'no_reference' ? (
                     <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                       <p className="text-yellow-400">Tu pago fue procesado. Revisa tu correo electrónico para ver tus diamantes.</p>
