@@ -97,7 +97,11 @@ function DashboardView() {
     try {
       const response = await api.post('/api/admin/sync-inventory');
       toast.success(response.data.message);
-      fetchStats(); // Recargar estadísticas
+      // Forzar recarga completa de estadísticas
+      setLoading(true);
+      const statsResponse = await api.get('/api/admin/stats');
+      setStats(statsResponse.data);
+      setLoading(false);
     } catch (error) {
       toast.error('Error al sincronizar');
     } finally {
