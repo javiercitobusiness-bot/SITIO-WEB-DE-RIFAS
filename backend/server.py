@@ -888,10 +888,23 @@ async def get_admin_purchases(request: Request, skip: int = 0, limit: int = 50):
 
 @api_router.delete("/admin/customer/{email}")
 async def delete_customer(request: Request, email: str):
-    """Eliminar cliente y todas sus compras/asignaciones"""
+    """Eliminar cliente y devolver sus diamantes al inventario"""
     await get_current_admin(request)
     
     try:
+        # Obtener todos los diamantes asignados a este cliente
+        assignments = await db.diamond_assignments.find({"customer_email": email}).to_list(100)
+        
+        # Devolver cada diamante al inventario
+        for assignment in assignments:
+            diamonds = assignment.get("diamonds", [])
+            for diamond in diamonds:
+                await db.event_inventory.update_one(
+                    {"diamond_number": diamond},
+                    {"$set": {"status": "available", "assigned_to": None, "assigned_at": None}}
+                )
+            logger.info(f"Returned {len(diamonds)} diamonds to inventory from {email}")
+        
         # Eliminar asignaciones de diamantes
         await db.diamond_assignments.delete_many({"customer_email": email})
         
@@ -899,7 +912,7 @@ async def delete_customer(request: Request, email: str):
         await db.purchases.delete_many({"customer_email": email})
         
         logger.info(f"Customer deleted: {email}")
-        return {"status": "success", "message": f"Cliente {email} eliminado"}
+        return {"status": "success", "message": f"Cliente {email} eliminado y diamantes devueltos al inventario"}
         
     except Exception as e:
         logger.error(f"Error deleting customer: {str(e)}")
@@ -907,18 +920,30 @@ async def delete_customer(request: Request, email: str):
 
 @api_router.delete("/admin/purchase/{reference}")
 async def delete_purchase(request: Request, reference: str):
-    """Eliminar una compra específica"""
+    """Eliminar una compra y devolver diamantes al inventario"""
     await get_current_admin(request)
     
     try:
-        # Eliminar asignación de diamantes si existe
+        # Obtener asignación de diamantes
+        assignment = await db.diamond_assignments.find_one({"reference": reference})
+        
+        if assignment:
+            diamonds = assignment.get("diamonds", [])
+            for diamond in diamonds:
+                await db.event_inventory.update_one(
+                    {"diamond_number": diamond},
+                    {"$set": {"status": "available", "assigned_to": None, "assigned_at": None}}
+                )
+            logger.info(f"Returned {len(diamonds)} diamonds to inventory from purchase {reference}")
+        
+        # Eliminar asignación de diamantes
         await db.diamond_assignments.delete_one({"reference": reference})
         
         # Eliminar la compra
         await db.purchases.delete_one({"reference": reference})
         
         logger.info(f"Purchase deleted: {reference}")
-        return {"status": "success", "message": "Compra eliminada"}
+        return {"status": "success", "message": "Compra eliminada y diamantes devueltos"}
         
     except Exception as e:
         logger.error(f"Error deleting purchase: {str(e)}")
