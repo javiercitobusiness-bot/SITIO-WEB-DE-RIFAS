@@ -309,20 +309,23 @@ async def create_purchase(request: PurchaseRequest):
             "original_amount": plan.price_cop,
             "discount_code": request.discount_code if discount_applied else None,
             "discount_percent": discount_applied,
-            "diamonds_count": plan.diamonds_count,
+            "influencer_code": request.influencer_code if extra_diamonds else None,
+            "extra_diamonds": extra_diamonds,
+            "diamonds_count": total_diamonds,
+            "base_diamonds": plan.diamonds_count,
             "status": "PENDING",
             "payment_method": payment_method,
             "payment_link": payment_data.get("url", ""),
             "created_at": payment_data.get("created_at")
         })
         
-        logger.info(f"Purchase created: {reference} for {request.customer_email}, amount: {final_amount}")
+        logger.info(f"Purchase created: {reference} for {request.customer_email}, amount: {final_amount}, diamonds: {total_diamonds}")
         
         return PurchaseResponse(
             payment_link=payment_data.get("url", ""),
             payment_reference=reference,
             plan=plan.name,
-            diamonds_count=plan.diamonds_count,
+            diamonds_count=total_diamonds,
             amount=final_amount,
             currency="COP"
         )
