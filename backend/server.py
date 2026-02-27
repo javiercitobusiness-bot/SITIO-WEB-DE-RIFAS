@@ -299,6 +299,9 @@ async def create_purchase(request: PurchaseRequest):
                 customer_name=request.customer_name
             )
         
+        # Log payment data for debugging
+        logger.info(f"Payment data received: {payment_data}")
+        
         await db.purchases.insert_one({
             "reference": reference,
             "plan": plan.id,
@@ -316,7 +319,8 @@ async def create_purchase(request: PurchaseRequest):
             "status": "PENDING",
             "payment_method": payment_method,
             "payment_link": payment_data.get("url", ""),
-            "created_at": payment_data.get("created_at")
+            "payment_link_id": payment_data.get("id") or payment_data.get("link_id") or payment_data.get("payment_link_id"),
+            "created_at": payment_data.get("created_at") or datetime.now(timezone.utc).isoformat()
         })
         
         logger.info(f"Purchase created: {reference} for {request.customer_email}, amount: {final_amount}, diamonds: {total_diamonds}")
