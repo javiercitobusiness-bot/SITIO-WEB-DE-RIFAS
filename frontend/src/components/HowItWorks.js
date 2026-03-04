@@ -33,34 +33,34 @@ export default function HowItWorks() {
     {
       icon: Sun,
       title: 'Sorteo Diario',
-      subtitle: 'Todos los días hay ganadores',
+      subtitle: 'El premio principal de cada día',
       color: 'cyan',
       bgGradient: 'from-cyan-500/20 to-blue-500/20',
       borderColor: 'border-cyan-500/30',
-      description: 'Cada día se premian DOS diamantes basados en los resultados de la lotería del día.',
+      description: 'Cada día se premia UN diamante basado en los resultados de la lotería del día.',
       details: [
-        { icon: CheckCircle, text: 'Un diamante al DERECHO (número tal cual sale)' },
-        { icon: RefreshCw, text: 'Un diamante al INVERSO (número al revés)' },
+        { icon: CheckCircle, text: 'Se premia el número al DERECHO (tal cual sale en la lotería)' },
+        { icon: Calendar, text: 'Los ganadores se publican todos los días' },
       ],
       prize: '$1.500.000',
-      prizeLabel: 'Premio por número',
-      highlight: 'Los ganadores se publican diariamente en nuestras redes sociales'
+      prizeLabel: 'Premio diario',
+      highlight: 'Si tu número coincide con el resultado de la lotería, ¡GANAS!'
     },
     {
-      icon: Star,
+      icon: RefreshCw,
       title: 'Repechaje',
-      subtitle: 'Segunda oportunidad de ganar',
+      subtitle: 'El número invertido también gana',
       color: 'purple',
       bgGradient: 'from-purple-500/20 to-pink-500/20',
       borderColor: 'border-purple-500/30',
-      description: 'Si no ganaste durante los días anteriores, tienes una segunda oportunidad con el sorteo de repechaje.',
+      description: 'Además del ganador principal, también gana quien tenga el número INVERTIDO del diamante ganador.',
       details: [
-        { icon: CheckCircle, text: 'Participan todos los diamantes que no ganaron antes' },
-        { icon: Award, text: 'Se sortea con la lotería de Medellín' },
+        { icon: CheckCircle, text: 'Participan TODOS los diamantes' },
+        { icon: RefreshCw, text: 'Si el ganador es 526431, el repechaje es 134625' },
       ],
-      prize: '$50.000.000',
+      prize: '$1.500.000',
       prizeLabel: 'Premio repechaje',
-      highlight: 'Solo participan quienes no han ganado en sorteos diarios'
+      highlight: '¡Dos ganadores cada día! El derecho y el invertido'
     },
     {
       icon: Trophy,
@@ -208,15 +208,15 @@ export default function HowItWorks() {
           </Card>
         </div>
 
-        {/* SECCION: Número Inverso */}
+        {/* SECCION: Número Inverso / Repechaje */}
         <div className="mb-16 md:mb-24">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
             <div className="p-3 bg-green-500/20 rounded-xl w-fit">
               <RefreshCw className="w-6 h-6 text-green-400" />
             </div>
             <div>
-              <h3 className="text-2xl md:text-3xl font-bold text-white">El Número Inverso</h3>
-              <p className="text-white/60 text-sm md:text-base">Duplica tus oportunidades de ganar cada día</p>
+              <h3 className="text-2xl md:text-3xl font-bold text-white">El Repechaje: Número Invertido</h3>
+              <p className="text-white/60 text-sm md:text-base">Dos ganadores en cada sorteo diario</p>
             </div>
           </div>
           
@@ -226,46 +226,45 @@ export default function HowItWorks() {
                 <div>
                   <p className="text-white/80 text-base md:text-lg mb-6 leading-relaxed">
                     En cada sorteo diario, <span className="text-green-400 font-semibold">dos personas ganan</span>: 
-                    quien tiene el número al derecho y quien tiene el número al revés.
+                    quien tiene el número ganador y quien tiene ese mismo número <span className="text-green-400 font-semibold">al revés</span>.
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-white/70">
                       <CheckCircle className="w-5 h-5 text-green-400" />
-                      <span>Ambos ganan el mismo premio</span>
+                      <span>Ambos ganan el mismo premio de <strong className="text-green-400">$1.500.000</strong></span>
                     </div>
                     <div className="flex items-center gap-3 text-white/70">
                       <CheckCircle className="w-5 h-5 text-green-400" />
-                      <span>Se anuncian diariamente en redes</span>
+                      <span>El repechaje se aplica TODOS los días</span>
                     </div>
                     <div className="flex items-center gap-3 text-white/70">
                       <CheckCircle className="w-5 h-5 text-green-400" />
-                      <span>Resultados 100% verificables</span>
+                      <span>Resultados publicados diariamente en redes</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-slate-900/50 rounded-2xl p-6 border border-green-500/20">
-                  <p className="text-white/50 text-sm mb-4 text-center uppercase tracking-wider">Ejemplo</p>
+                  <p className="text-white/50 text-sm mb-4 text-center uppercase tracking-wider">Ejemplo de cómo funciona</p>
                   <div className="flex flex-col items-center gap-4">
                     <div className="text-center">
-                      <p className="text-white/50 text-xs mb-2">Número derecho</p>
+                      <p className="text-cyan-400 text-xs mb-2 font-semibold">GANADOR PRINCIPAL</p>
                       <div className="flex items-center gap-2">
                         <Diamond className="w-6 h-6 text-cyan-400" />
                         <p className="text-3xl font-bold text-cyan-400 font-mono">526431</p>
                       </div>
+                      <p className="text-cyan-400/70 text-sm mt-1">Gana $1.500.000</p>
                     </div>
-                    <RefreshCw className="w-8 h-8 text-green-400 animate-spin-slow" />
+                    <RefreshCw className="w-8 h-8 text-green-400" />
                     <div className="text-center">
-                      <p className="text-white/50 text-xs mb-2">Número inverso</p>
+                      <p className="text-green-400 text-xs mb-2 font-semibold">REPECHAJE (INVERTIDO)</p>
                       <div className="flex items-center gap-2">
                         <Diamond className="w-6 h-6 text-green-400" />
                         <p className="text-3xl font-bold text-green-400 font-mono">134625</p>
                       </div>
+                      <p className="text-green-400/70 text-sm mt-1">¡También gana $1.500.000!</p>
                     </div>
                   </div>
-                  <p className="text-center text-green-400/80 text-sm mt-4 pt-4 border-t border-green-500/20">
-                    Ambos ganan $1.500.000
-                  </p>
                 </div>
               </div>
             </CardContent>
