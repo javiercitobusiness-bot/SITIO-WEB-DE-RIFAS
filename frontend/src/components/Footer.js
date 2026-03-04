@@ -1,8 +1,17 @@
 import React from 'react';
 import Diamond from './Diamond';
-import { Mail, Phone, Instagram, Facebook } from 'lucide-react';
+import { Mail, Phone, Instagram, Facebook, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
+  // Datos de contacto
+  const socialLinks = {
+    instagram: 'https://www.instagram.com/soyjaviercito___',
+    facebook: 'https://www.facebook.com/JavierAlvarezTV70/',
+    whatsapp: 'https://wa.me/573018177278',
+    phone: '+573018177278',
+    email: 'soportedinamicadiamantes@gmail.com'
+  };
+
   return (
     <footer className="bg-slate-950 border-t border-slate-800 py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -23,18 +32,29 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Contacto</h3>
             <div className="space-y-3">
               <a 
-                href="mailto:soportedinamicadiamantes@gmail.com" 
+                href={`mailto:${socialLinks.email}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 text-white/60 hover:text-cyan-400 text-sm transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                soportedinamicadiamantes@gmail.com
+                {socialLinks.email}
               </a>
               <a 
-                href="tel:+573001234567" 
+                href={`tel:${socialLinks.phone}`}
                 className="flex items-center gap-2 text-white/60 hover:text-cyan-400 text-sm transition-colors"
               >
                 <Phone className="w-4 h-4" />
-                +57 300 123 4567
+                +57 301 817 7278
+              </a>
+              <a 
+                href={socialLinks.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white/60 hover:text-green-400 text-sm transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp
               </a>
             </div>
           </div>
@@ -44,16 +64,31 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Síguenos</h3>
             <div className="flex gap-4">
               <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white/60 hover:text-cyan-400 hover:bg-slate-700 transition-all"
+                href={socialLinks.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white hover:scale-110 transition-all"
+                aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white/60 hover:text-cyan-400 hover:bg-slate-700 transition-all"
+                href={socialLinks.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white hover:scale-110 transition-all"
+                aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
+              </a>
+              <a 
+                href={socialLinks.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white hover:scale-110 transition-all"
+                aria-label="WhatsApp"
+              >
+                <MessageCircle className="w-5 h-5" />
               </a>
             </div>
           </div>
