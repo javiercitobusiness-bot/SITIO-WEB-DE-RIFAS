@@ -1580,14 +1580,14 @@ async def get_public_active_event():
 
 @api_router.get("/events/available")
 async def get_available_events():
-    """Get all active events for public display"""
+    """Get all events for public display (active, paused, and finished)"""
     try:
         cursor = db.events.find(
-            {"status": "active"},
+            {},  # Sin filtro - mostrar todos
             {"_id": 0}
-        ).sort("start_date", 1)
+        ).sort("start_date", -1)  # Más recientes primero
         
-        events = await cursor.to_list(20)
+        events = await cursor.to_list(50)
         
         # Format events for frontend
         formatted_events = []
@@ -1605,7 +1605,8 @@ async def get_available_events():
                 "image_url": event.get("image_url"),
                 "price_per_number": event.get("price_per_number", 500),
                 "symbol_type": event.get("symbol_type", "diamond"),
-                "lottery_name": event.get("lottery_name")
+                "lottery_name": event.get("lottery_name"),
+                "status": event.get("status", "draft")
             })
         
         return {"events": formatted_events}

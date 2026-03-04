@@ -194,8 +194,16 @@ export default function Home() {
                               <SymbolIcon className="w-20 h-20 text-cyan-400" />
                             </div>
                           )}
-                          <Badge className="absolute top-4 left-4 bg-green-500 text-white">
-                            Activo
+                          <Badge className={`absolute top-4 left-4 ${
+                            event.status === 'active' ? 'bg-green-500' :
+                            event.status === 'paused' ? 'bg-yellow-500' :
+                            event.status === 'finished' ? 'bg-slate-500' :
+                            'bg-blue-500'
+                          } text-white`}>
+                            {event.status === 'active' ? 'Activo' :
+                             event.status === 'paused' ? 'Pausado' :
+                             event.status === 'finished' ? 'Finalizado' :
+                             'Borrador'}
                           </Badge>
                         </div>
                         
