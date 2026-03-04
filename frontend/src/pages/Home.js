@@ -150,39 +150,51 @@ export default function Home() {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
         <Header />
-        <main className="flex-1 py-12 px-4">
+        <main className="flex-1 py-6 md:py-12 px-4">
           <div className="max-w-5xl mx-auto">
-            {/* Hero Section */}
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6">
+            {/* Hero Section - Optimizado para móvil */}
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-4">
                 <Diamond className="w-4 h-4 text-cyan-400" />
-                <span className="text-cyan-400 text-sm font-medium">Dinámica de Diamantes</span>
+                <span className="text-cyan-400 text-xs font-medium">Dinámica de Diamantes</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-3">
                 Eventos <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Disponibles</span>
               </h1>
-              <p className="text-white/60 text-lg max-w-xl mx-auto">
-                Elige el evento en el que deseas participar y gana increíbles premios
+              <p className="text-white/60 text-sm md:text-lg max-w-xl mx-auto px-4">
+                Elige el evento en el que deseas participar
               </p>
             </div>
 
-            {/* Events Grid */}
-            <div className="grid gap-6">
+            {/* Events Grid - Diseño móvil mejorado */}
+            <div className="grid gap-4 md:gap-6">
               {events.map((event) => {
                 const SymbolIcon = getSymbolIcon(event.symbol_type);
                 const mainPrize = event.prizes?.find(p => p.prize_type === 'main');
                 const totalPrizes = event.prizes?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                const isActive = event.status === 'active';
                 
                 return (
                   <Card 
                     key={event.id}
-                    className="bg-gradient-to-br from-slate-900/90 to-slate-800/50 border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer group overflow-hidden"
+                    data-testid={`event-card-${event.id}`}
+                    className={`relative overflow-hidden border-2 transition-all duration-300 cursor-pointer active:scale-[0.98] ${
+                      isActive 
+                        ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-cyan-500/30 hover:border-cyan-400' 
+                        : 'bg-slate-900/50 border-slate-700/50 opacity-80'
+                    }`}
                     onClick={() => handleSelectEvent(event)}
                   >
-                    <CardContent className="p-0">
-                      <div className="flex flex-col md:flex-row">
-                        {/* Image Section */}
-                        <div className="md:w-64 h-48 md:h-auto relative">
+                    {/* Glow effect for active events */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-cyan-500/5 pointer-events-none" />
+                    )}
+                    
+                    <CardContent className="p-0 relative">
+                      {/* Mobile-first layout */}
+                      <div className="flex flex-col">
+                        {/* Image/Icon Header */}
+                        <div className="relative h-40 md:h-48 overflow-hidden">
                           {event.image_url ? (
                             <img 
                               src={event.image_url} 
@@ -190,66 +202,84 @@ export default function Home() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
-                              <SymbolIcon className="w-20 h-20 text-cyan-400" />
+                            <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 via-purple-500/10 to-slate-900 flex items-center justify-center">
+                              <div className="relative">
+                                <div className="absolute inset-0 blur-2xl bg-cyan-400/30 rounded-full scale-150" />
+                                <SymbolIcon className="w-16 h-16 md:w-20 md:h-20 text-cyan-400 relative z-10 animate-pulse" />
+                              </div>
                             </div>
                           )}
-                          <Badge className={`absolute top-4 left-4 ${
-                            event.status === 'active' ? 'bg-green-500' :
-                            event.status === 'paused' ? 'bg-yellow-500' :
-                            event.status === 'finished' ? 'bg-slate-500' :
-                            'bg-blue-500'
-                          } text-white`}>
-                            {event.status === 'active' ? 'Activo' :
-                             event.status === 'paused' ? 'Pausado' :
-                             event.status === 'finished' ? 'Finalizado' :
-                             'Borrador'}
-                          </Badge>
+                          
+                          {/* Status Badge */}
+                          <div className="absolute top-3 left-3">
+                            <Badge className={`px-3 py-1 text-xs font-semibold shadow-lg ${
+                              event.status === 'active' ? 'bg-green-500 text-white' :
+                              event.status === 'paused' ? 'bg-yellow-500 text-black' :
+                              event.status === 'finished' ? 'bg-slate-600 text-white' :
+                              'bg-blue-500 text-white'
+                            }`}>
+                              {event.status === 'active' ? '🟢 ACTIVO' :
+                               event.status === 'paused' ? '⏸️ PAUSADO' :
+                               event.status === 'finished' ? 'FINALIZADO' :
+                               'BORRADOR'}
+                            </Badge>
+                          </div>
+                          
+                          {/* Prize overlay */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent p-4 pt-8">
+                            <p className="text-cyan-400 text-xs uppercase tracking-wider mb-1">Premio Principal</p>
+                            <p className="text-3xl md:text-4xl font-black text-white">
+                              ${mainPrize?.amount?.toLocaleString() || totalPrizes.toLocaleString()}
+                            </p>
+                          </div>
                         </div>
                         
-                        {/* Content Section */}
-                        <div className="flex-1 p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
-                                {event.name}
-                              </h3>
-                              <p className="text-white/60 text-sm mb-4">
-                                {event.description}
-                              </p>
-                            </div>
-                            <ChevronRight className="w-8 h-8 text-white/30 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
-                          </div>
+                        {/* Content */}
+                        <div className="p-4 md:p-6">
+                          {/* Title */}
+                          <h3 className="text-xl md:text-2xl font-bold text-white mb-2 leading-tight">
+                            {event.name}
+                          </h3>
+                          <p className="text-white/60 text-sm mb-4 line-clamp-2">
+                            {event.description}
+                          </p>
                           
-                          {/* Prize Highlight */}
-                          <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
-                            <div className="flex flex-wrap items-center justify-between gap-4">
-                              <div>
-                                <p className="text-white/50 text-xs uppercase tracking-wider mb-1">Premio Principal</p>
-                                <p className="text-2xl md:text-3xl font-bold text-cyan-400">
-                                  ${mainPrize?.amount?.toLocaleString() || totalPrizes.toLocaleString()}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-white/50 text-xs uppercase tracking-wider mb-1">Total en Premios</p>
-                                <p className="text-xl font-bold text-yellow-400">
-                                  ${totalPrizes.toLocaleString()}
-                                </p>
-                              </div>
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div className="bg-slate-800/50 rounded-lg p-3 text-center">
+                              <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Total Premios</p>
+                              <p className="text-lg font-bold text-yellow-400">${(totalPrizes/1000000).toFixed(0)}M</p>
+                            </div>
+                            <div className="bg-slate-800/50 rounded-lg p-3 text-center">
+                              <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Números</p>
+                              <p className="text-lg font-bold text-cyan-400">{(event.total_numbers/1000).toFixed(0)}K</p>
                             </div>
                           </div>
                           
-                          {/* Meta Info */}
-                          <div className="flex flex-wrap items-center gap-4 text-sm">
-                            <span className="flex items-center gap-2 text-white/50">
-                              <Calendar className="w-4 h-4" />
-                              {formatDate(event.start_date)} - {formatDate(event.end_date)}
-                            </span>
-                            <span className="flex items-center gap-2 text-white/50">
-                              <SymbolIcon className="w-4 h-4 text-cyan-400" />
-                              {event.total_numbers?.toLocaleString()} números disponibles
-                            </span>
+                          {/* Dates */}
+                          <div className="flex items-center gap-2 text-white/50 text-xs mb-4">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{formatDate(event.start_date)} - {formatDate(event.end_date)}</span>
                           </div>
+                          
+                          {/* CTA Button */}
+                          <Button 
+                            className={`w-full py-6 text-base font-semibold rounded-xl transition-all ${
+                              isActive
+                                ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-lg shadow-cyan-500/25'
+                                : 'bg-slate-700 text-white/70'
+                            }`}
+                            disabled={!isActive}
+                          >
+                            {isActive ? (
+                              <>
+                                <span>Participar Ahora</span>
+                                <ChevronRight className="w-5 h-5 ml-2" />
+                              </>
+                            ) : (
+                              <span>Evento {event.status === 'finished' ? 'Finalizado' : 'No Disponible'}</span>
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -274,82 +304,113 @@ export default function Home() {
   // Single event detail view
   const event = selectedEvent || events[0];
   const SymbolIcon = getSymbolIcon(event?.symbol_type);
+  const mainPrize = event?.prizes?.find(p => p.prize_type === 'main');
+  const totalPrizes = event?.prizes?.reduce((sum, p) => sum + (p.amount || 0), 0) || 150000000;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <Header />
       
       <main className="flex-1">
         {/* Back button if multiple events */}
         {events.length > 1 && (
-          <div className="max-w-6xl mx-auto px-4 pt-4">
-            <Button 
-              variant="ghost" 
-              className="text-white/60 hover:text-white"
-              onClick={handleBackToList}
-            >
-              ← Ver todos los eventos
-            </Button>
+          <div className="sticky top-16 z-40 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800">
+            <div className="max-w-6xl mx-auto px-4 py-3">
+              <Button 
+                variant="ghost" 
+                className="text-white/60 hover:text-white text-sm"
+                onClick={handleBackToList}
+              >
+                ← Ver todos los eventos
+              </Button>
+            </div>
           </div>
         )}
 
-        {/* Hero Section */}
-        <section className="relative py-12 md:py-20 px-4 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent" />
+        {/* Hero Section - Mobile Optimized */}
+        <section className="relative py-8 md:py-16 px-4 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/30 via-transparent to-transparent" />
           
           <div className="max-w-6xl mx-auto relative z-10">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6">
-                <SymbolIcon className="w-5 h-5 text-cyan-400" />
-                <span className="text-cyan-400 text-sm font-medium">
-                  {event?.name || 'MARZO LLENO DE DIAMANTES'}
+            <div className="text-center">
+              {/* Event Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-4">
+                <SymbolIcon className="w-4 h-4 text-cyan-400" />
+                <span className="text-cyan-400 text-xs font-medium uppercase tracking-wider">
+                  {event?.name || 'EVENTO ACTIVO'}
                 </span>
               </div>
               
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-                Gana <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">$150.000.000</span>
+              {/* Main Prize */}
+              <h1 className="text-4xl md:text-6xl font-black text-white mb-2">
+                Gana
               </h1>
+              <p className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-cyan-300 to-purple-400 mb-4">
+                ${(mainPrize?.amount || totalPrizes).toLocaleString()}
+              </p>
               
-              <p className="text-lg text-white/60 max-w-2xl mx-auto mb-4">
-                {event?.description || 'Compra tus diamantes numerados y participa por increíbles premios en efectivo.'}
+              <p className="text-base md:text-lg text-white/60 max-w-xl mx-auto mb-6 px-4">
+                {event?.description || 'Compra tus diamantes y participa por increíbles premios'}
               </p>
 
+              {/* Date Badge */}
               {event?.start_date && event?.end_date && (
-                <div className="flex items-center justify-center gap-2 text-white/50 mb-8">
-                  <Clock className="w-4 h-4" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 text-white/60 text-sm mb-6">
+                  <Calendar className="w-4 h-4" />
                   <span>{formatDate(event.start_date)} - {formatDate(event.end_date)}</span>
                 </div>
               )}
 
               {/* Progress Bar */}
-              <div className="max-w-md mx-auto">
+              <div className="max-w-sm mx-auto mb-8">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-white/60">
-                    {event?.symbol_type === 'star' ? 'Estrellas' : 'Diamantes'} vendidos
-                  </span>
-                  <span className="text-cyan-400 font-semibold">{soldPercentage}%</span>
+                  <span className="text-white/60">Vendidos</span>
+                  <span className="text-cyan-400 font-bold">{soldPercentage}%</span>
                 </div>
-                <Progress value={parseFloat(soldPercentage)} className="h-3 bg-slate-800" />
-                <p className="text-xs text-white/40 mt-2">
-                  {inventoryStats?.sold_diamonds?.toLocaleString() || 0} de {inventoryStats?.total_diamonds?.toLocaleString() || '1,000,000'}
+                <div className="relative">
+                  <Progress value={parseFloat(soldPercentage)} className="h-4 bg-slate-800 rounded-full" />
+                  <div className="absolute inset-0 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full transition-all duration-500"
+                      style={{ width: `${soldPercentage}%` }}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-white/40 mt-2 text-center">
+                  {inventoryStats?.sold_diamonds?.toLocaleString() || 0} de {inventoryStats?.total_diamonds?.toLocaleString() || '1,000,000'} números
                 </p>
               </div>
-            </div>
 
-            {/* Floating Symbols Animation */}
-            <div className="flex justify-center gap-4 mb-12">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="animate-bounce"
-                  style={{ animationDelay: `${i * 0.1}s`, animationDuration: '2s' }}
-                >
-                  <SymbolIcon className="w-10 h-10 md:w-14 md:h-14 text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
-                </div>
-              ))}
+              {/* Floating Symbols */}
+              <div className="flex justify-center gap-3 md:gap-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className="animate-bounce"
+                    style={{ animationDelay: `${i * 0.15}s`, animationDuration: '2.5s' }}
+                  >
+                    <SymbolIcon className="w-8 h-8 md:w-12 md:h-12 text-cyan-400 drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
+
+        {/* Prize Images if available */}
+        {(event?.image_url || event?.image_url_2 || event?.image_url_3) && (
+          <section className="py-6 px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[event?.image_url, event?.image_url_2, event?.image_url_3].filter(Boolean).map((img, idx) => (
+                  <div key={idx} className="rounded-2xl overflow-hidden border-2 border-slate-700">
+                    <img src={img} alt={`Premio ${idx + 1}`} className="w-full h-48 md:h-64 object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Prizes Section */}
         <PrizeInfo event={event} />
@@ -363,22 +424,23 @@ export default function Home() {
         {/* How It Works */}
         <HowItWorks />
 
-        {/* How it Works */}
-        <section className="py-16 px-4">
+        {/* Simple Steps */}
+        <section className="py-12 md:py-16 px-4 bg-slate-900/50">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8 md:mb-12">
               ¿Cómo Participar?
             </h2>
             
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { step: 1, title: 'Elige tu Plan', desc: 'Selecciona el plan que mejor se adapte a ti' },
-                { step: 2, title: 'Realiza el Pago', desc: 'Paga de forma segura con tu método preferido' },
-                { step: 3, title: 'Recibe tus Números', desc: `Te enviaremos tus ${event?.symbol_type === 'star' ? 'estrellas' : 'diamantes'} numerados al correo` }
+                { step: 1, title: 'Elige tu Plan', desc: 'Selecciona la cantidad de números que deseas', icon: '🎯' },
+                { step: 2, title: 'Paga Seguro', desc: 'Usa BOLD o Mercado Pago', icon: '💳' },
+                { step: 3, title: 'Recibe tus Números', desc: 'Te llegará un email con tus diamantes', icon: '💎' }
               ].map((item) => (
-                <div key={item.step} className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-white">{item.step}</span>
+                <div key={item.step} className="text-center p-6 rounded-2xl bg-slate-800/30 border border-slate-700">
+                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+                    <span className="text-lg font-bold text-white">{item.step}</span>
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
                   <p className="text-white/60 text-sm">{item.desc}</p>

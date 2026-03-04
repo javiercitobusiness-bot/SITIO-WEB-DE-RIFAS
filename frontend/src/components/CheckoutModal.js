@@ -144,31 +144,31 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Diamond className="w-6 h-6 text-cyan-400" />
+      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-md max-h-[90vh] overflow-y-auto mx-4 rounded-2xl">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <Diamond className="w-5 h-5 text-cyan-400" />
             Completar Compra
           </DialogTitle>
-          <DialogDescription className="text-white/60">
-            Completa tus datos para continuar con el pago
+          <DialogDescription className="text-white/60 text-sm">
+            Completa tus datos para continuar
           </DialogDescription>
         </DialogHeader>
 
-        {/* Plan Summary */}
-        <div className="bg-slate-800/50 rounded-lg p-4 mb-4">
+        {/* Plan Summary - Compact */}
+        <div className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl p-4 mb-4 border border-cyan-500/20">
           <div className="flex justify-between items-center">
             <div>
-              <p className="font-semibold">{plan.name}</p>
-              <p className="text-sm text-cyan-400">{plan.diamonds_count} diamantes</p>
+              <p className="font-semibold text-white">{plan.name}</p>
+              <p className="text-sm text-cyan-400">{plan.diamonds_count || plan.numbers_count} diamantes</p>
             </div>
             <div className="text-right">
-              <p className="text-xl font-bold">{formatCurrency(plan.price)}</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(plan.price)}</p>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="customer_name">Nombre completo</Label>
             <div className="relative">
