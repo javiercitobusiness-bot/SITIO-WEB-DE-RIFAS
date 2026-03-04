@@ -143,15 +143,9 @@ class EventService:
             raise
     
     async def set_active_event(self, event_id: str) -> bool:
-        """Establecer un evento como activo (desactiva los demás)"""
+        """Activar un evento (sin afectar otros eventos)"""
         try:
-            # Pausar todos los eventos activos
-            await self.collection.update_many(
-                {"status": "active"},
-                {"$set": {"status": "paused", "updated_at": datetime.now(timezone.utc).isoformat()}}
-            )
-            
-            # Activar el evento seleccionado
+            # Solo activar el evento seleccionado, NO pausar los demás
             result = await self.collection.update_one(
                 {"event_id": event_id},
                 {"$set": {"status": "active", "updated_at": datetime.now(timezone.utc).isoformat()}}
