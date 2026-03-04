@@ -1458,6 +1458,7 @@ async def get_event_stats(request: Request, event_id: str):
 # Payment gateway endpoints
 @api_router.get("/admin/payment-gateways")
 async def get_all_payment_gateways(request: Request):
+    """Obtener todas las cuentas de pasarelas configuradas"""
     await get_current_admin(request)
     
     try:
@@ -1467,49 +1468,91 @@ async def get_all_payment_gateways(request: Request):
         logger.error(f"Error getting payment gateways: {str(e)}")
         raise HTTPException(status_code=500, detail="Error obteniendo pasarelas")
 
-@api_router.get("/admin/payment-gateways/configured")
-async def get_configured_payment_gateways(request: Request):
+@api_router.get("/admin/payment-gateways/types")
+async def get_supported_gateway_types(request: Request):
+    """Obtener tipos de pasarelas soportadas"""
     await get_current_admin(request)
     
     try:
-        gateways = await payment_gateway_service.get_configured_gateways()
+        types = await payment_gateway_service.get_supported_types()
+        return {"types": types}
+    except Exception as e:
+        logger.error(f"Error getting gateway types: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error obteniendo tipos")
+
+@api_router.get("/admin/payment-gateways/active")
+async def get_active_payment_gateways(request: Request):
+    """Obtener pasarelas activas"""
+    await get_current_admin(request)
+    
+    try:
+        gateways = await payment_gateway_service.get_active_gateways()
         return {"gateways": gateways}
     except Exception as e:
-        logger.error(f"Error getting configured gateways: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error obteniendo pasarelas configuradas")
+        logger.error(f"Error getting active gateways: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error obteniendo pasarelas activas")
 
-@api_router.get("/admin/payment-gateways/{gateway_id}")
-async def get_payment_gateway_config(request: Request, gateway_id: str):
-    await get_current_admin(request)
-    
-    try:
-        config = await payment_gateway_service.get_gateway_config(gateway_id)
-        return {"config": config}
-    except Exception as e:
-        logger.error(f"Error getting gateway config: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error obteniendo configuración")
-
-@api_router.post("/admin/payment-gateways/{gateway_id}")
-async def save_payment_gateway_config(request: Request, gateway_id: str):
+@api_router.post("/admin/payment-gateways")
+async def add_payment_gateway_account(request: Request):
+    """Agregar nueva cuenta de pasarela"""
     await get_current_admin(request)
     
     try:
         body = await request.json()
+        gateway_type = body.get("gateway_type")
+        display_name = body.get("display_name", "")
         credentials = body.get("credentials", {})
-        is_active = body.get("is_active", True)
+        priority = body.get("priority", 0)
         
-        success = await payment_gateway_service.save_gateway_config(
-            gateway_id, credentials, is_active
+        if not gateway_type:
+            raise HTTPException(status_code=400, detail="Tipo de pasarela requerido")
+        
+        gateway = await payment_gateway_service.add_gateway(
+            gateway_type, display_name, credentials, priority
         )
         
-        if success:
-            return {"message": "Configuración guardada exitosamente"}
-        else:
-            raise HTTPException(status_code=500, detail="Error guardando configuración")
+        return {"message": "Pasarela agregada", "gateway": gateway}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error saving gateway config: {str(e)}")
+        logger.error(f"Error adding gateway: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+@api_router.put("/admin/payment-gateways/{gateway_id}")
+async def update_payment_gateway_account(request: Request, gateway_id: str):
+    """Actualizar cuenta de pasarela"""
+    await get_current_admin(request)
+    
+    try:
+        body = await request.json()
+        success = await payment_gateway_service.update_gateway(gateway_id, body)
+        
+        if success:
+            return {"message": "Pasarela actualizada"}
+        else:
+            raise HTTPException(status_code=404, detail="Pasarela no encontrada")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating gateway: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+@api_router.delete("/admin/payment-gateways/{gateway_id}")
+async def delete_payment_gateway_account(request: Request, gateway_id: str):
+    """Eliminar cuenta de pasarela"""
+    await get_current_admin(request)
+    
+    try:
+        success = await payment_gateway_service.delete_gateway(gateway_id)
+        
+        if success:
+            return {"message": "Pasarela eliminada"}
+        else:
+            raise HTTPException(status_code=404, detail="Pasarela no encontrada")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting gateway: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 @api_router.put("/admin/payment-gateways/{gateway_id}/toggle")
@@ -1532,22 +1575,37 @@ async def toggle_payment_gateway(request: Request, gateway_id: str):
         logger.error(f"Error toggling gateway: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
-@api_router.delete("/admin/payment-gateways/{gateway_id}")
-async def delete_payment_gateway_config(request: Request, gateway_id: str):
+@api_router.post("/admin/payment-gateways/reorder")
+async def reorder_payment_gateways(request: Request):
+    """Reordenar pasarelas por prioridad"""
     await get_current_admin(request)
     
     try:
-        success = await payment_gateway_service.delete_gateway_config(gateway_id)
+        body = await request.json()
+        gateway_ids = body.get("gateway_ids", [])
+        
+        success = await payment_gateway_service.reorder_gateways(gateway_ids)
         
         if success:
-            return {"message": "Configuración eliminada"}
+            return {"message": "Orden actualizado"}
         else:
-            raise HTTPException(status_code=404, detail="Configuración no encontrada")
+            raise HTTPException(status_code=500, detail="Error actualizando orden")
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting gateway config: {str(e)}")
+        logger.error(f"Error reordering gateways: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+# Endpoint público para checkout - obtener pasarelas disponibles
+@api_router.get("/payment-methods")
+async def get_available_payment_methods():
+    """Obtener métodos de pago disponibles para el checkout"""
+    try:
+        gateways = await payment_gateway_service.get_active_gateways()
+        return {"methods": gateways}
+    except Exception as e:
+        logger.error(f"Error getting payment methods: {str(e)}")
+        return {"methods": []}
 
 # Public endpoints
 @api_router.get("/event/active")

@@ -40,9 +40,12 @@ import {
   Globe,
   Save,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Lock,
   Search,
-  Star
+  Star,
+  EyeOff
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -1514,46 +1517,105 @@ function SecuritySettingsView() {
 // Payment Gateways View
 function PaymentGatewaysView() {
   const [gateways, setGateways] = useState([]);
+  const [gatewayTypes, setGatewayTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newGateway, setNewGateway] = useState({ name: '', type: 'custom', api_key: '', secret_key: '' });
+  const [selectedType, setSelectedType] = useState(null);
+  const [formData, setFormData] = useState({
+    display_name: '',
+    credentials: {},
+    priority: 0
+  });
 
   useEffect(() => {
-    fetchGateways();
+    fetchData();
   }, []);
 
-  const fetchGateways = async () => {
+  const fetchData = async () => {
     try {
-      const response = await api.get('/api/admin/gateways');
-      setGateways(response.data.gateways || []);
+      const [gatewaysRes, typesRes] = await Promise.all([
+        api.get('/api/admin/payment-gateways'),
+        api.get('/api/admin/payment-gateways/types')
+      ]);
+      setGateways(gatewaysRes.data.gateways || []);
+      setGatewayTypes(typesRes.data.types || []);
     } catch (error) {
-      console.log('No custom gateways yet');
+      console.error('Error fetching gateways:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const addGateway = async () => {
+    if (!selectedType || !formData.display_name) {
+      toast.error('Completa todos los campos');
+      return;
+    }
+    
     try {
-      await api.post('/api/admin/add-gateway', newGateway);
-      toast.success('Pasarela agregada');
+      await api.post('/api/admin/payment-gateways', {
+        gateway_type: selectedType.id,
+        display_name: formData.display_name,
+        credentials: formData.credentials,
+        priority: gateways.length // Agregar al final
+      });
+      toast.success('Pasarela agregada exitosamente');
       setShowAddModal(false);
-      setNewGateway({ name: '', type: 'custom', api_key: '', secret_key: '' });
-      fetchGateways();
+      setSelectedType(null);
+      setFormData({ display_name: '', credentials: {}, priority: 0 });
+      fetchData();
     } catch (error) {
-      toast.error('Error al agregar pasarela');
+      toast.error(error.response?.data?.detail || 'Error al agregar pasarela');
     }
   };
 
-  const deleteGateway = async (name) => {
-    if (window.confirm('¿Eliminar esta pasarela?')) {
+  const toggleGateway = async (gatewayId, isActive) => {
+    try {
+      await api.put(`/api/admin/payment-gateways/${gatewayId}/toggle`, { is_active: !isActive });
+      toast.success(isActive ? 'Pasarela desactivada' : 'Pasarela activada');
+      fetchData();
+    } catch (error) {
+      toast.error('Error al cambiar estado');
+    }
+  };
+
+  const deleteGateway = async (gatewayId, displayName) => {
+    if (window.confirm(`¿Eliminar "${displayName}"? Esta acción no se puede deshacer.`)) {
       try {
-        await api.delete(`/api/admin/gateway/${name}`);
+        await api.delete(`/api/admin/payment-gateways/${gatewayId}`);
         toast.success('Pasarela eliminada');
-        fetchGateways();
+        fetchData();
       } catch (error) {
         toast.error('Error al eliminar');
       }
+    }
+  };
+
+  const moveGateway = async (index, direction) => {
+    const newGateways = [...gateways];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= gateways.length) return;
+    
+    [newGateways[index], newGateways[newIndex]] = [newGateways[newIndex], newGateways[index]];
+    
+    try {
+      await api.post('/api/admin/payment-gateways/reorder', {
+        gateway_ids: newGateways.map(g => g.gateway_id)
+      });
+      setGateways(newGateways);
+      toast.success('Orden actualizado');
+    } catch (error) {
+      toast.error('Error al reordenar');
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    switch(type) {
+      case 'bold': return '💳';
+      case 'mercadopago': return '🔵';
+      case 'nequi': return '💜';
+      case 'daviplata': return '🔴';
+      default: return '💰';
     }
   };
 
@@ -1564,86 +1626,189 @@ function PaymentGatewaysView() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Pasarelas de Pago</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-white">Pasarelas de Pago</h2>
+          <p className="text-white/60 text-sm">Gestiona múltiples cuentas y su orden de prioridad</p>
+        </div>
         <Button onClick={() => setShowAddModal(true)} className="bg-cyan-600 hover:bg-cyan-700">
-          + Agregar Pasarela
+          <Plus className="w-4 h-4 mr-2" />
+          Agregar Cuenta
         </Button>
       </div>
 
-      {/* BOLD - Principal */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-blue-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-white font-semibold">BOLD</h3>
-              <p className="text-sm text-white/60">Pasarela principal (configurada en servidor)</p>
-            </div>
-            <Badge className="bg-green-500/20 text-green-400">Activo</Badge>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Info */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+        <p className="text-blue-400 text-sm">
+          <strong>Tip:</strong> Las pasarelas aparecerán en el checkout en el orden que configures aquí. 
+          Usa las flechas para cambiar la prioridad.
+        </p>
+      </div>
 
-      {/* Pasarelas personalizadas */}
-      {gateways.map((gw) => (
-        <Card key={gw.name} className="bg-slate-800/50 border-slate-700">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-purple-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-white font-semibold">{gw.name}</h3>
-                <p className="text-sm text-white/60">API Key: {gw.api_key?.slice(0, 10)}...</p>
-              </div>
-              <Badge className={gw.active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}>
-                {gw.active ? 'Activo' : 'Inactivo'}
-              </Badge>
-              <Button variant="destructive" size="sm" onClick={() => deleteGateway(gw.name)}>
-                Eliminar
-              </Button>
-            </div>
+      {/* Lista de pasarelas */}
+      {gateways.length === 0 ? (
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardContent className="p-8 text-center">
+            <CreditCard className="w-12 h-12 text-white/30 mx-auto mb-4" />
+            <p className="text-white/60">No hay pasarelas configuradas</p>
+            <p className="text-white/40 text-sm">Agrega una cuenta para empezar a recibir pagos</p>
           </CardContent>
         </Card>
-      ))}
+      ) : (
+        <div className="space-y-3">
+          {gateways.map((gw, index) => (
+            <Card key={gw.gateway_id} className={`border-2 transition-all ${gw.is_active ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-900/50 border-slate-800 opacity-60'}`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  {/* Orden */}
+                  <div className="flex flex-col gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 w-6 p-0"
+                      onClick={() => moveGateway(index, 'up')}
+                      disabled={index === 0}
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </Button>
+                    <span className="text-center text-xs text-white/40">{index + 1}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 w-6 p-0"
+                      onClick={() => moveGateway(index, 'down')}
+                      disabled={index === gateways.length - 1}
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Icono */}
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-xl flex items-center justify-center text-2xl">
+                    {getTypeIcon(gw.gateway_type)}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-semibold">{gw.display_name}</h3>
+                      <Badge className="text-xs bg-slate-700 text-white/60">
+                        {gw.type_name || gw.gateway_type}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-white/40">ID: {gw.gateway_id}</p>
+                  </div>
+
+                  {/* Estado */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleGateway(gw.gateway_id, gw.is_active)}
+                    className={gw.is_active ? 'text-green-400 hover:text-green-300' : 'text-red-400 hover:text-red-300'}
+                  >
+                    {gw.is_active ? (
+                      <><Eye className="w-4 h-4 mr-1" /> Activo</>
+                    ) : (
+                      <><EyeOff className="w-4 h-4 mr-1" /> Inactivo</>
+                    )}
+                  </Button>
+
+                  {/* Eliminar */}
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-red-400 hover:text-red-300"
+                    onClick={() => deleteGateway(gw.gateway_id, gw.display_name)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Modal agregar pasarela */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="bg-slate-900 border-slate-700">
+        <DialogContent className="bg-slate-900 border-slate-700 max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white">Agregar Nueva Pasarela</DialogTitle>
+            <DialogTitle className="text-white">Agregar Nueva Cuenta de Pasarela</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Puedes agregar múltiples cuentas del mismo tipo
+            </DialogDescription>
           </DialogHeader>
+          
           <div className="space-y-4">
-            <div>
-              <Label>Nombre</Label>
-              <Input 
-                value={newGateway.name}
-                onChange={(e) => setNewGateway({...newGateway, name: e.target.value})}
-                placeholder="Ej: Stripe, PayU, Mercadopago"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-            <div>
-              <Label>API Key</Label>
-              <Input 
-                value={newGateway.api_key}
-                onChange={(e) => setNewGateway({...newGateway, api_key: e.target.value})}
-                placeholder="Tu API key"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-            <div>
-              <Label>Secret Key (opcional)</Label>
-              <Input 
-                value={newGateway.secret_key}
-                onChange={(e) => setNewGateway({...newGateway, secret_key: e.target.value})}
-                placeholder="Tu secret key"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-            <Button onClick={addGateway} className="w-full bg-cyan-600">Guardar Pasarela</Button>
+            {/* Seleccionar tipo */}
+            {!selectedType ? (
+              <div>
+                <Label className="text-white/80 mb-3 block">Selecciona el tipo de pasarela</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {gatewayTypes.map((type) => (
+                    <Button
+                      key={type.id}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-start bg-slate-800 border-slate-700 hover:border-cyan-500"
+                      onClick={() => setSelectedType(type)}
+                    >
+                      <span className="text-2xl mb-2">{getTypeIcon(type.id)}</span>
+                      <span className="text-white font-semibold">{type.name}</span>
+                      <span className="text-white/50 text-xs">{type.country}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                  <span className="text-2xl">{getTypeIcon(selectedType.id)}</span>
+                  <div className="flex-1">
+                    <p className="text-white font-semibold">{selectedType.name}</p>
+                    <p className="text-white/50 text-xs">{selectedType.description}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedType(null)}>
+                    Cambiar
+                  </Button>
+                </div>
+
+                <div>
+                  <Label className="text-white/80">Nombre para identificar esta cuenta</Label>
+                  <Input 
+                    value={formData.display_name}
+                    onChange={(e) => setFormData({...formData, display_name: e.target.value})}
+                    placeholder={`Ej: ${selectedType.name} Principal, ${selectedType.name} Backup`}
+                    className="bg-slate-800 border-slate-700 text-white mt-1"
+                  />
+                </div>
+
+                {/* Campos dinámicos según el tipo */}
+                {selectedType.required_fields?.map((field) => (
+                  <div key={field.key}>
+                    <Label className="text-white/80">{field.label}</Label>
+                    <Input 
+                      type={field.type === 'password' ? 'password' : 'text'}
+                      value={formData.credentials[field.key] || ''}
+                      onChange={(e) => setFormData({
+                        ...formData, 
+                        credentials: {...formData.credentials, [field.key]: e.target.value}
+                      })}
+                      placeholder={`Ingresa tu ${field.label}`}
+                      className="bg-slate-800 border-slate-700 text-white mt-1"
+                    />
+                  </div>
+                ))}
+
+                {selectedType.docs_url && (
+                  <p className="text-white/40 text-xs">
+                    ¿Necesitas ayuda? <a href={selectedType.docs_url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Ver documentación</a>
+                  </p>
+                )}
+
+                <Button onClick={addGateway} className="w-full bg-cyan-600 hover:bg-cyan-700">
+                  Guardar Pasarela
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
