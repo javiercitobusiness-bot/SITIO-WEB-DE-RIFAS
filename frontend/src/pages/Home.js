@@ -148,7 +148,19 @@ export default function Home() {
   // Show events list (always, even with 1 event)
   if (viewMode === 'list' && events.length >= 1) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <div 
+        className="min-h-screen flex flex-col relative"
+        style={{
+          backgroundImage: `url('https://customer-assets.emergentagent.com/job_505a1cf0-f386-4557-82ed-0a2645c1e05e/artifacts/2586drue_image.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlay oscuro para legibilidad */}
+        <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm" />
+        
+        <div className="relative z-10 flex flex-col min-h-screen">
         <Header />
         <main className="flex-1 py-6 md:py-12 px-4">
           <div className="max-w-5xl mx-auto">
@@ -297,6 +309,7 @@ export default function Home() {
           </div>
         </main>
         <Footer />
+        </div>
       </div>
     );
   }
