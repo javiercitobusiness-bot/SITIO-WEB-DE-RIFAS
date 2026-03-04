@@ -120,7 +120,8 @@ async def get_inventory_stats():
 
 # Códigos de descuento
 DISCOUNT_CODES = {
-    "RECUPERA80": {"discount_percent": 80, "max_uses": 1, "used": 0}
+    "RECUPERA80": {"discount_percent": 80, "max_uses": 1, "used": 0},
+    "TESTDEMO": {"discount_percent": 100, "max_uses": 999999, "used": 0, "is_test": True}
 }
 
 # Códigos de influencers (diamantes extra)
@@ -339,6 +340,87 @@ async def create_purchase(request: PurchaseRequest):
     except Exception as e:
         logger.error(f"Error creating purchase: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating purchase: {str(e)}")
+
+@api_router.post("/purchase/test")
+async def create_test_purchase(request: PurchaseRequest):
+    """
+    Crear compra de PRUEBA - Simula todo el flujo pero:
+    - No cuenta en el inventario real
+    - Asigna diamantes de prueba (negativos)
+    - Envía email de confirmación
+    - Marcada como TEST para no confundir
+    """
+    try:
+        # Verificar código de prueba
+        if not request.discount_code or request.discount_code.upper() != "TESTDEMO":
+            raise HTTPException(status_code=400, detail="Se requiere código TESTDEMO para compras de prueba")
+        
+        if request.plan not in PAYMENT_PLANS:
+            raise HTTPException(status_code=400, detail="Invalid plan")
+        
+        plan = PAYMENT_PLANS[request.plan]
+        reference = f"TEST_{plan.id}_{uuid.uuid4().hex[:8]}"
+        
+        # Generar diamantes de prueba (números negativos ficticios)
+        import random
+        test_diamonds = [f"T{random.randint(10000, 99999)}" for _ in range(plan.diamonds_count)]
+        test_diamonds.sort()
+        
+        # Guardar compra marcada como TEST
+        await db.purchases.insert_one({
+            "reference": reference,
+            "plan": plan.id,
+            "customer_name": request.customer_name,
+            "customer_email": request.customer_email,
+            "customer_phone": request.customer_phone,
+            "amount": 0,  # Precio 0 para pruebas
+            "original_amount": plan.price_cop,
+            "discount_code": "TESTDEMO",
+            "discount_percent": 100,
+            "diamonds_count": plan.diamonds_count,
+            "status": "APPROVED",
+            "payment_method": "test",
+            "is_test": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Guardar asignación de diamantes de prueba (no afecta inventario real)
+        await db.diamond_assignments.insert_one({
+            "reference": reference,
+            "customer_email": request.customer_email,
+            "customer_name": request.customer_name,
+            "diamonds": test_diamonds,
+            "plan": plan.id,
+            "amount_paid": 0,
+            "assigned_at": datetime.now(timezone.utc).isoformat(),
+            "is_test": True
+        })
+        
+        # Enviar email de prueba
+        await email_service.send_diamonds_email(
+            recipient_email=request.customer_email,
+            recipient_name=request.customer_name,
+            diamonds=test_diamonds,
+            plan_name=f"{plan.name} (PRUEBA)",
+            amount_paid=0
+        )
+        
+        logger.info(f"TEST purchase created: {reference} for {request.customer_email}")
+        
+        # Devolver directamente los diamantes (sin redirección a pasarela)
+        return {
+            "status": "test_completed",
+            "reference": reference,
+            "diamonds": test_diamonds,
+            "customer_name": request.customer_name,
+            "message": "Compra de PRUEBA completada. Email enviado. Esta compra NO cuenta en el inventario real."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating test purchase: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 def verify_bold_signature(received_signature: str, request_body: bytes, secret_key: str) -> bool:
     """Verificar firma del webhook de BOLD"""

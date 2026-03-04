@@ -99,10 +99,23 @@ export default function CheckoutModal({ open, onClose, plan, onComplete }) {
     setLoading(true);
     
     try {
-      const response = await axios.post(`${API_URL}/api/purchase`, {
+      // Si es código de prueba TESTDEMO, usar endpoint especial
+      const isTestMode = formData.discount_code?.toUpperCase() === 'TESTDEMO';
+      const endpoint = isTestMode ? `${API_URL}/api/purchase/test` : `${API_URL}/api/purchase`;
+      
+      const response = await axios.post(endpoint, {
         plan: plan.id,
         ...formData
       });
+      
+      // Si es modo prueba, mostrar resultados directamente
+      if (isTestMode && response.data.status === 'test_completed') {
+        toast.success('¡Compra de PRUEBA completada! Email enviado.');
+        // Redirigir a página de éxito con los diamantes de prueba
+        localStorage.setItem('lastPurchaseReference', response.data.reference);
+        window.location.href = `/compra-exitosa?reference=${response.data.reference}`;
+        return;
+      }
       
       // Guardar referencia para procesar después del pago
       if (response.data.payment_reference) {

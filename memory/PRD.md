@@ -33,17 +33,21 @@ Aplicación full-stack para venta de boletos de rifa/lotería numerados (diamant
 - [x] Página de éxito con visualización de diamantes
 - [x] Descarga de imagen con números
 - [x] Email de confirmación con diamantes
+- [x] **NUEVO**: Código de prueba TESTDEMO para testing
 
 ### Frontend Público
 - [x] Página principal con evento activo
 - [x] Sección de premios
-- [x] Sección "Cómo Funciona"
+- [x] **MEJORADO**: Sección "Cómo Funciona" con explicación de 3 tipos de sorteo
 - [x] Testimonios de ganadores
 - [x] Botón flotante "Comprar"
+- [x] **NUEVO**: Header con enlaces a Premios, Planes y Cómo Funciona
+- [x] **MEJORADO**: Vista móvil responsive
 
 ## Credenciales de Prueba
 - **Admin**: `/admin` - Usuario: `admin`, Contraseña: `diamantes2024`
 - **Código descuento**: `RECUPERA80` (80% off)
+- **Código de prueba**: `TESTDEMO` (simula compra completa sin contar en inventario)
 
 ## URLs de la Aplicación
 - **Preview**: https://lottery-payment-test.preview.emergentagent.com
@@ -55,6 +59,20 @@ Aplicación full-stack para venta de boletos de rifa/lotería numerados (diamant
 ---
 
 ## Changelog
+
+### 2026-03-04
+- **NUEVO**: Sección "Cómo Funciona" rediseñada estilo landing page
+  - Explicación de 3 tipos de sorteo: Diario, Repechaje, Gran Premio Final
+  - Explicación visual del cálculo del número ganador
+  - Sección de número inverso
+  - Calendario de sorteos
+  - Premios inmediatos
+- **NUEVO**: Enlace "Cómo Funciona" agregado al header
+- **MEJORADO**: Vista móvil completamente responsive
+- **NUEVO**: Código de prueba `TESTDEMO` para testing de flujo completo
+  - Genera diamantes de prueba (prefijo T)
+  - Envía email de confirmación
+  - No afecta el inventario real
 
 ### 2026-02-27
 - **FIX**: Corregido botón "Sincronizar Inventario" - ahora actualiza todas las colecciones de MongoDB correctamente
