@@ -588,11 +588,30 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
             </div>
           </div>
 
+          {/* Imagen Principal del Evento */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              Imagen Principal del Evento
+            </Label>
+            <p className="text-xs text-white/50">Esta imagen aparece en la card del evento. Tamaño recomendado: 800x450px (16:9)</p>
+            <Input
+              value={formData.image_url}
+              onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+              className="bg-slate-800 border-slate-700"
+              placeholder="https://tu-imagen.com/evento.jpg"
+            />
+            {formData.image_url && (
+              <img src={formData.image_url} alt="Preview" className="w-full h-32 object-cover rounded-lg border border-slate-700" />
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Image className="w-4 h-4" />
               Imágenes de Premios (hasta 3)
             </Label>
+            <p className="text-xs text-white/50">Tamaño recomendado: 600x600px (1:1 cuadrada)</p>
             {[0, 1, 2].map((idx) => (
               <div key={idx} className="space-y-1">
                 <Input
@@ -781,11 +800,30 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                 </Select>
               </div>
 
+              {/* Imagen Principal del Evento */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Image className="w-4 h-4" />
+                  Imagen Principal del Evento
+                </Label>
+                <p className="text-xs text-white/50">Aparece en la card. Tamaño: 800x450px (16:9)</p>
+                <Input
+                  value={formData.image_url || ''}
+                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="https://tu-imagen.com/evento.jpg"
+                />
+                {formData.image_url && (
+                  <img src={formData.image_url} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-slate-700" />
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Image className="w-4 h-4" />
                   Imágenes de Premios (hasta 3)
                 </Label>
+                <p className="text-xs text-white/50">Tamaño: 600x600px (1:1)</p>
                 {[0, 1, 2].map((idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <Input
