@@ -397,22 +397,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Prize Images if available */}
-        {(event?.image_url || event?.image_url_2 || event?.image_url_3) && (
-          <section className="py-6 px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[event?.image_url, event?.image_url_2, event?.image_url_3].filter(Boolean).map((img, idx) => (
-                  <div key={idx} className="rounded-2xl overflow-hidden border-2 border-slate-700">
-                    <img src={img} alt={`Premio ${idx + 1}`} className="w-full h-48 md:h-64 object-cover" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Prizes Section */}
+        {/* Prizes Section - con imágenes integradas */}
         <PrizeInfo event={event} />
 
         {/* Pricing Plans */}
