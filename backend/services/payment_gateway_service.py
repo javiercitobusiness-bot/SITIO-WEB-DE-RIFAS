@@ -34,24 +34,15 @@ class PaymentGatewayService:
             ],
             "docs_url": "https://www.mercadopago.com.co/developers"
         },
-        "nequi": {
-            "name": "Nequi",
-            "description": "Pagos con Nequi",
-            "country": "Colombia",
+        "stripe": {
+            "name": "Stripe",
+            "description": "Pagos internacionales con tarjeta",
+            "country": "Internacional",
             "required_fields": [
-                {"key": "api_key", "label": "API Key", "type": "password"},
-                {"key": "secret_key", "label": "Secret Key", "type": "password"}
+                {"key": "secret_key", "label": "Secret Key (sk_...)", "type": "password"},
+                {"key": "publishable_key", "label": "Publishable Key (pk_...)", "type": "text"}
             ],
-            "docs_url": "https://conecta.nequi.com"
-        },
-        "daviplata": {
-            "name": "Daviplata",
-            "description": "Pagos con Daviplata",
-            "country": "Colombia",
-            "required_fields": [
-                {"key": "api_key", "label": "API Key", "type": "password"}
-            ],
-            "docs_url": "https://daviplata.com"
+            "docs_url": "https://stripe.com/docs"
         }
     }
     
