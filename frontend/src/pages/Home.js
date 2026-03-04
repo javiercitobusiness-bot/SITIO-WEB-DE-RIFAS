@@ -45,11 +45,8 @@ export default function Home() {
       const availableEvents = eventsRes.data.events || [];
       setEvents(availableEvents);
       
-      // If only one event, select it automatically
-      if (availableEvents.length === 1) {
-        setSelectedEvent(availableEvents[0]);
-        setViewMode('detail');
-      }
+      // Always show list view first, let user choose event
+      setViewMode('list');
       
       setPlans(plansRes.data);
       setInventoryStats(statsRes.data);
@@ -148,68 +145,101 @@ export default function Home() {
     );
   }
 
-  // Multiple events - show list
-  if (viewMode === 'list' && events.length > 1) {
+  // Show events list (always, even with 1 event)
+  if (viewMode === 'list' && events.length >= 1) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
         <Header />
         <main className="flex-1 py-12 px-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
+            {/* Hero Section */}
             <div className="text-center mb-12">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Eventos Disponibles
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6">
+                <Diamond className="w-4 h-4 text-cyan-400" />
+                <span className="text-cyan-400 text-sm font-medium">Dinámica de Diamantes</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Eventos <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Disponibles</span>
               </h1>
-              <p className="text-white/60">
-                Elige el evento en el que deseas participar
+              <p className="text-white/60 text-lg max-w-xl mx-auto">
+                Elige el evento en el que deseas participar y gana increíbles premios
               </p>
             </div>
 
+            {/* Events Grid */}
             <div className="grid gap-6">
               {events.map((event) => {
                 const SymbolIcon = getSymbolIcon(event.symbol_type);
+                const mainPrize = event.prizes?.find(p => p.prize_type === 'main');
+                const totalPrizes = event.prizes?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                
                 return (
                   <Card 
                     key={event.id}
-                    className="bg-slate-900/80 border-slate-800 hover:border-cyan-500/50 transition-all cursor-pointer group"
+                    className="bg-gradient-to-br from-slate-900/90 to-slate-800/50 border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer group overflow-hidden"
                     onClick={() => handleSelectEvent(event)}
                   >
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-6">
-                        {event.image_url ? (
-                          <img 
-                            src={event.image_url} 
-                            alt={event.name}
-                            className="w-32 h-32 object-cover rounded-xl"
-                          />
-                        ) : (
-                          <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
-                            <SymbolIcon className="w-16 h-16 text-cyan-400" />
-                          </div>
-                        )}
+                    <CardContent className="p-0">
+                      <div className="flex flex-col md:flex-row">
+                        {/* Image Section */}
+                        <div className="md:w-64 h-48 md:h-auto relative">
+                          {event.image_url ? (
+                            <img 
+                              src={event.image_url} 
+                              alt={event.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
+                              <SymbolIcon className="w-20 h-20 text-cyan-400" />
+                            </div>
+                          )}
+                          <Badge className="absolute top-4 left-4 bg-green-500 text-white">
+                            Activo
+                          </Badge>
+                        </div>
                         
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
+                        {/* Content Section */}
+                        <div className="flex-1 p-6">
+                          <div className="flex items-start justify-between mb-4">
                             <div>
-                              <Badge className="mb-2 bg-green-500/20 text-green-400">
-                                Activo
-                              </Badge>
-                              <h3 className="text-xl font-bold text-white mb-2">
+                              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
                                 {event.name}
                               </h3>
-                              <p className="text-white/60 text-sm mb-3">
+                              <p className="text-white/60 text-sm mb-4">
                                 {event.description}
                               </p>
                             </div>
-                            <ChevronRight className="w-6 h-6 text-white/30 group-hover:text-cyan-400 transition-colors" />
+                            <ChevronRight className="w-8 h-8 text-white/30 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
                           </div>
                           
-                          <div className="flex flex-wrap gap-4 text-sm">
-                            <span className="flex items-center gap-1 text-white/50">
+                          {/* Prize Highlight */}
+                          <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
+                            <div className="flex flex-wrap items-center justify-between gap-4">
+                              <div>
+                                <p className="text-white/50 text-xs uppercase tracking-wider mb-1">Premio Principal</p>
+                                <p className="text-2xl md:text-3xl font-bold text-cyan-400">
+                                  ${mainPrize?.amount?.toLocaleString() || totalPrizes.toLocaleString()}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-white/50 text-xs uppercase tracking-wider mb-1">Total en Premios</p>
+                                <p className="text-xl font-bold text-yellow-400">
+                                  ${totalPrizes.toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Meta Info */}
+                          <div className="flex flex-wrap items-center gap-4 text-sm">
+                            <span className="flex items-center gap-2 text-white/50">
                               <Calendar className="w-4 h-4" />
                               {formatDate(event.start_date)} - {formatDate(event.end_date)}
                             </span>
-                            <span className="text-cyan-400 font-semibold">
-                              {event.total_numbers?.toLocaleString()} números
+                            <span className="flex items-center gap-2 text-white/50">
+                              <SymbolIcon className="w-4 h-4 text-cyan-400" />
+                              {event.total_numbers?.toLocaleString()} números disponibles
                             </span>
                           </div>
                         </div>
@@ -218,6 +248,13 @@ export default function Home() {
                   </Card>
                 );
               })}
+            </div>
+
+            {/* Call to Action */}
+            <div className="mt-12 text-center">
+              <p className="text-white/40 text-sm">
+                Haz clic en un evento para ver los detalles y participar
+              </p>
             </div>
           </div>
         </main>

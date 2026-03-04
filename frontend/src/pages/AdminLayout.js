@@ -554,7 +554,6 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
                 onChange={(e) => setFormData({...formData, price_per_number: parseInt(e.target.value)})}
                 className="bg-slate-800 border-slate-700"
                 min="100"
-                max="10000"
               />
             </div>
           </div>
