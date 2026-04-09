@@ -800,6 +800,28 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                 </Select>
               </div>
 
+              {/* Fechas del evento */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Fecha de Inicio</Label>
+                  <Input
+                    type="date"
+                    value={formData.start_date ? formData.start_date.split('T')[0] : ''}
+                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                    className="bg-slate-800 border-slate-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fecha de Fin</Label>
+                  <Input
+                    type="date"
+                    value={formData.end_date ? formData.end_date.split('T')[0] : ''}
+                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                    className="bg-slate-800 border-slate-700"
+                  />
+                </div>
+              </div>
+
               {/* Imagen Principal del Evento */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
