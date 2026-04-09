@@ -25,12 +25,6 @@ export default function Header() {
           >
             Planes
           </a>
-          <a 
-            href="#como-funciona" 
-            className="text-white/70 hover:text-white text-xs sm:text-sm transition-colors px-2 py-1"
-          >
-            Cómo Funciona
-          </a>
         </nav>
       </div>
     </header>

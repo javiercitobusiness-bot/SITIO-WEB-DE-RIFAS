@@ -419,9 +419,6 @@ export default function Home() {
         {/* Testimonials */}
         <Testimonials />
 
-        {/* How It Works */}
-        <HowItWorks />
-
         {/* Simple Steps */}
         <section className="py-12 md:py-16 px-4 bg-slate-900/50">
           <div className="max-w-4xl mx-auto">
