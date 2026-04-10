@@ -419,31 +419,46 @@ export default function Home() {
         {/* Testimonials */}
         <Testimonials />
 
-        {/* Simple Steps */}
-        <section className="py-12 md:py-16 px-4 bg-slate-900/50">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8 md:mb-12">
-              ¿Cómo Participar?
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { step: 1, title: 'Elige tu Plan', desc: 'Selecciona la cantidad de números que deseas', icon: '🎯' },
-                { step: 2, title: 'Paga Seguro', desc: 'Usa BOLD o Mercado Pago', icon: '💳' },
-                { step: 3, title: 'Recibe tus Números', desc: 'Te llegará un email con tus diamantes', icon: '💎' }
-              ].map((item) => (
-                <div key={item.step} className="text-center p-6 rounded-2xl bg-slate-800/30 border border-slate-700">
-                  <div className="text-4xl mb-4">{item.icon}</div>
-                  <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
-                    <span className="text-lg font-bold text-white">{item.step}</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
-                  <p className="text-white/60 text-sm">{item.desc}</p>
+        {/* Dynamic How It Works Section - controlled by event settings */}
+        {event?.show_how_it_works && (
+          <section className="py-12 md:py-16 px-4 bg-slate-900/50">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8 md:mb-12">
+                {event?.how_it_works_title || '¿Cómo Funciona?'}
+              </h2>
+              
+              {event?.how_it_works_content ? (
+                <div className="space-y-4">
+                  {event.how_it_works_content.split('\n').filter(line => line.trim()).map((line, idx) => (
+                    <div key={idx} className="flex items-start gap-4 p-4 rounded-xl bg-slate-800/30 border border-slate-700">
+                      <div className="w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+                        <span className="text-sm font-bold text-white">{idx + 1}</span>
+                      </div>
+                      <p className="text-white/80 text-sm md:text-base pt-1">{line.trim()}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { step: 1, title: 'Elige tu Plan', desc: 'Selecciona la cantidad de números que deseas', icon: '🎯' },
+                    { step: 2, title: 'Paga Seguro', desc: 'Usa BOLD o Mercado Pago', icon: '💳' },
+                    { step: 3, title: 'Recibe tus Números', desc: 'Te llegará un email con tus diamantes', icon: '💎' }
+                  ].map((item) => (
+                    <div key={item.step} className="text-center p-6 rounded-2xl bg-slate-800/30 border border-slate-700">
+                      <div className="text-4xl mb-4">{item.icon}</div>
+                      <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+                        <span className="text-lg font-bold text-white">{item.step}</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+                      <p className="text-white/60 text-sm">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
 
       <Footer />

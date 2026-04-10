@@ -37,6 +37,12 @@ class EventService:
                 "image_url": event_data.get("image_url"),
                 "template_id": event_data.get("template_id"),
                 "payment_gateway": event_data.get("payment_gateway", "bold"),
+                # Display settings
+                "show_prizes_section": event_data.get("show_prizes_section", True),
+                "prizes_section_title": event_data.get("prizes_section_title", "Premios Increíbles"),
+                "show_how_it_works": event_data.get("show_how_it_works", False),
+                "how_it_works_title": event_data.get("how_it_works_title", "¿Cómo Funciona?"),
+                "how_it_works_content": event_data.get("how_it_works_content", ""),
                 "created_at": now.isoformat(),
                 "updated_at": now.isoformat()
             }

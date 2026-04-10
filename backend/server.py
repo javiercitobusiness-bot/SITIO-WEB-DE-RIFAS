@@ -1664,7 +1664,13 @@ async def get_available_events():
                 "price_per_number": event.get("price_per_number", 500),
                 "symbol_type": event.get("symbol_type", "diamond"),
                 "lottery_name": event.get("lottery_name"),
-                "status": event.get("status", "draft")
+                "status": event.get("status", "draft"),
+                # Display settings
+                "show_prizes_section": event.get("show_prizes_section", True),
+                "prizes_section_title": event.get("prizes_section_title", "Premios Increíbles"),
+                "show_how_it_works": event.get("show_how_it_works", False),
+                "how_it_works_title": event.get("how_it_works_title", "¿Cómo Funciona?"),
+                "how_it_works_content": event.get("how_it_works_content", "")
             })
         
         return {"events": formatted_events}
