@@ -240,8 +240,8 @@ export default function Home() {
                           {/* Prize overlay */}
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent p-4 pt-8">
                             <p className="text-cyan-400 text-xs uppercase tracking-wider mb-1">Premio Principal</p>
-                            <p className="text-3xl md:text-4xl font-black text-white">
-                              ${mainPrize?.amount?.toLocaleString() || totalPrizes.toLocaleString()}
+                            <p className="text-2xl md:text-3xl font-black text-white">
+                              {mainPrize?.display_value || (mainPrize?.amount ? `$${mainPrize.amount.toLocaleString()}` : 'Ver premios')}
                             </p>
                           </div>
                         </div>
