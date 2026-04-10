@@ -130,20 +130,6 @@ class EmailService:
                                             </tr>
                                         </table>
                                         
-                                        <!-- Prizes -->
-                                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border-radius: 10px; padding: 20px; margin: 20px 0;">
-                                            <tr>
-                                                <td>
-                                                    <h3 style="color: #92400e; font-size: 18px; margin: 0 0 10px 0;">🏆 Premios Totales: $150,000,000 COP</h3>
-                                                    <ul style="color: #78350f; line-height: 1.8; margin: 10px 0; padding-left: 20px;">
-                                                        <li>💰 <strong>Premio Principal:</strong> $100,000,000 COP</li>
-                                                        <li>🎁 <strong>Repechaje:</strong> $50,000,000 COP</li>
-                                                        <li>✨ <strong>Premios Diarios</strong></li>
-                                                    </ul>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        
                                         <!-- Participation -->
                                         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0fdf4; border-radius: 10px; padding: 20px; margin: 20px 0;">
                                             <tr>
