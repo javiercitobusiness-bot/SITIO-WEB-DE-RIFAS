@@ -951,7 +951,7 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Input
-                        placeholder="Nombre del premio"
+                        placeholder="Nombre (ej: Gran Premio)"
                         value={prize.name}
                         onChange={(e) => updatePrize(index, 'name', e.target.value)}
                         className="bg-slate-900 border-slate-700"
@@ -966,24 +966,35 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                         <SelectContent className="bg-slate-800 border-slate-700">
                           <SelectItem value="main">Principal</SelectItem>
                           <SelectItem value="repechaje">Repechaje</SelectItem>
-                          <SelectItem value="daily">Diario (Derecho)</SelectItem>
-                          <SelectItem value="daily_inverse">Diario (Inverso)</SelectItem>
+                          <SelectItem value="daily">Diario</SelectItem>
+                          <SelectItem value="object">Objeto/Producto</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-white/50">Valor a mostrar (dinero o texto)</Label>
+                      <Input
+                        placeholder="Ej: $100.000.000 o Moto Yamaha FZ o iPhone 15 Pro"
+                        value={prize.display_value || ''}
+                        onChange={(e) => updatePrize(index, 'display_value', e.target.value)}
+                        className="bg-slate-900 border-slate-700"
+                      />
+                    </div>
                     <Input
-                      type="number"
-                      placeholder="Valor en COP"
-                      value={prize.amount}
-                      onChange={(e) => updatePrize(index, 'amount', parseInt(e.target.value) || 0)}
-                      className="bg-slate-900 border-slate-700"
-                    />
-                    <Input
-                      placeholder="Descripción"
+                      placeholder="Descripción adicional (opcional)"
                       value={prize.description}
                       onChange={(e) => updatePrize(index, 'description', e.target.value)}
                       className="bg-slate-900 border-slate-700"
                     />
+                    <Input
+                      placeholder="URL de imagen del premio (opcional)"
+                      value={prize.image_url || ''}
+                      onChange={(e) => updatePrize(index, 'image_url', e.target.value)}
+                      className="bg-slate-900 border-slate-700"
+                    />
+                    {prize.image_url && (
+                      <img src={prize.image_url} alt={prize.name} className="w-full h-20 object-cover rounded border border-slate-700" />
+                    )}
                   </CardContent>
                 </Card>
               ))}

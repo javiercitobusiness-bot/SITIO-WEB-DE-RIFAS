@@ -1,25 +1,12 @@
 import React from 'react';
-import Diamond from './Diamond';
-import { Trophy, Gift, Calendar, Star } from 'lucide-react';
+import { Trophy, Gift, Calendar, Star, Car, Smartphone } from 'lucide-react';
 
 export default function PrizeInfo({ event }) {
-  // Solo mostrar premios si el evento tiene premios configurados
   const prizes = event?.prizes || [];
-  const prizeImages = event?.prize_images || [];
 
-  // Si no hay premios configurados, no mostrar nada
   if (prizes.length === 0) {
     return null;
   }
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const getPrizeStyle = (index, prize) => {
     if (prize.prize_type === 'main' || index === 0) {
@@ -29,18 +16,25 @@ export default function PrizeInfo({ event }) {
         iconBg: 'bg-yellow-500/20',
         iconColor: 'text-yellow-400',
         amountColor: 'text-yellow-400',
-        badge: prize.name || 'PREMIO',
         badgeBg: 'bg-yellow-500'
       };
-    } else if (prize.prize_type === 'daily' || index === 2) {
+    } else if (prize.prize_type === 'daily') {
       return {
         gradient: 'from-green-500/20 via-emerald-500/10 to-green-500/5',
         border: 'border-green-500/40',
         iconBg: 'bg-green-500/20',
         iconColor: 'text-green-400',
         amountColor: 'text-green-400',
-        badge: prize.name || 'PREMIO',
         badgeBg: 'bg-green-500'
+      };
+    } else if (prize.prize_type === 'object') {
+      return {
+        gradient: 'from-cyan-500/20 via-blue-500/10 to-cyan-500/5',
+        border: 'border-cyan-500/40',
+        iconBg: 'bg-cyan-500/20',
+        iconColor: 'text-cyan-400',
+        amountColor: 'text-cyan-400',
+        badgeBg: 'bg-cyan-500'
       };
     } else {
       return {
@@ -49,25 +43,25 @@ export default function PrizeInfo({ event }) {
         iconBg: 'bg-purple-500/20',
         iconColor: 'text-purple-400',
         amountColor: 'text-purple-400',
-        badge: prize.name || 'PREMIO',
         badgeBg: 'bg-purple-500'
       };
     }
   };
 
-  const getPrizeIcon = (index) => {
-    if (index === 0) return Trophy;
-    if (index === 2) return Calendar;
+  const getPrizeIcon = (prize) => {
+    if (prize.prize_type === 'object') return Gift;
+    if (prize.prize_type === 'main') return Trophy;
+    if (prize.prize_type === 'daily') return Calendar;
     return Star;
   };
 
   return (
-    <section id="premios" className="py-12 md:py-16 px-4 bg-gradient-to-b from-slate-950 to-slate-900">
+    <section id="premios" className="py-12 md:py-16 px-4 bg-gradient-to-b from-slate-950/50 to-slate-900/50">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 md:mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 mb-4">
             <Trophy className="w-4 h-4 text-yellow-400" />
-            <span className="text-yellow-400 text-sm font-medium">Premios en Efectivo</span>
+            <span className="text-yellow-400 text-sm font-medium">Premios</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
             Premios <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">Increíbles</span>
@@ -77,8 +71,7 @@ export default function PrizeInfo({ event }) {
         <div className="space-y-6 md:space-y-8">
           {prizes.map((prize, index) => {
             const style = getPrizeStyle(index, prize);
-            const Icon = getPrizeIcon(index);
-            const prizeImage = prizeImages[index];
+            const Icon = getPrizeIcon(prize);
 
             return (
               <div 
@@ -86,10 +79,10 @@ export default function PrizeInfo({ event }) {
                 className={`relative overflow-hidden rounded-2xl md:rounded-3xl border-2 ${style.border} bg-gradient-to-br ${style.gradient}`}
               >
                 <div className="flex flex-col md:flex-row">
-                  {prizeImage ? (
+                  {prize.image_url ? (
                     <div className="md:w-1/3 h-48 md:h-auto relative">
                       <img 
-                        src={prizeImage} 
+                        src={prize.image_url} 
                         alt={prize.name}
                         className="w-full h-full object-cover"
                       />
@@ -97,7 +90,7 @@ export default function PrizeInfo({ event }) {
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent md:hidden" />
                       <div className="absolute top-4 left-4">
                         <span className={`px-3 py-1.5 ${style.badgeBg} text-black text-xs font-bold rounded-full shadow-lg`}>
-                          {style.badge}
+                          {prize.name}
                         </span>
                       </div>
                     </div>
@@ -106,7 +99,7 @@ export default function PrizeInfo({ event }) {
                       <Icon className={`w-20 h-20 ${style.iconColor} opacity-30`} />
                       <div className="absolute top-4 left-4">
                         <span className={`px-3 py-1.5 ${style.badgeBg} text-black text-xs font-bold rounded-full shadow-lg`}>
-                          {style.badge}
+                          {prize.name}
                         </span>
                       </div>
                     </div>
@@ -122,8 +115,9 @@ export default function PrizeInfo({ event }) {
                       </h3>
                     </div>
                     
-                    <p className={`text-4xl md:text-5xl font-black ${style.amountColor} mb-3`}>
-                      {formatCurrency(prize.amount)}
+                    {/* Mostrar el valor personalizado (dinero o texto) */}
+                    <p className={`text-3xl md:text-4xl font-black ${style.amountColor} mb-3`}>
+                      {prize.display_value || (prize.amount ? `$${prize.amount.toLocaleString()}` : '')}
                     </p>
                     
                     {prize.description && (
@@ -136,15 +130,6 @@ export default function PrizeInfo({ event }) {
               </div>
             );
           })}
-        </div>
-
-        <div className="mt-10 md:mt-14 text-center">
-          <div className="inline-block p-6 md:p-8 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-cyan-500/20">
-            <p className="text-white/50 text-sm mb-2">Total en premios</p>
-            <p className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-              {formatCurrency(prizes.reduce((sum, p) => sum + (p.amount || 0), 0))}
-            </p>
-          </div>
         </div>
       </div>
     </section>

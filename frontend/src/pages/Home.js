@@ -358,8 +358,8 @@ export default function Home() {
               <h1 className="text-4xl md:text-6xl font-black text-white mb-2">
                 Gana
               </h1>
-              <p className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-cyan-300 to-purple-400 mb-4">
-                ${(mainPrize?.amount || totalPrizes).toLocaleString()}
+              <p className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-cyan-300 to-purple-400 mb-4">
+                {mainPrize?.display_value || (mainPrize?.amount ? `$${mainPrize.amount.toLocaleString()}` : event?.description || 'Increíbles Premios')}
               </p>
               
               <p className="text-base md:text-lg text-white/60 max-w-xl mx-auto mb-6 px-4">
