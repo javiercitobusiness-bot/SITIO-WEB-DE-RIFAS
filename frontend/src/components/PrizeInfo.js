@@ -4,9 +4,12 @@ import { Trophy, Gift, Calendar, Star, Car, Smartphone } from 'lucide-react';
 export default function PrizeInfo({ event }) {
   const prizes = event?.prizes || [];
 
-  if (prizes.length === 0) {
+  // Si está deshabilitada la sección o no hay premios, no mostrar nada
+  if (event?.show_prizes_section === false || prizes.length === 0) {
     return null;
   }
+
+  const sectionTitle = event?.prizes_section_title || 'Premios Increíbles';
 
   const getPrizeStyle = (index, prize) => {
     if (prize.prize_type === 'main' || index === 0) {
@@ -64,7 +67,11 @@ export default function PrizeInfo({ event }) {
             <span className="text-yellow-400 text-sm font-medium">Premios</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-            Premios <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">Increíbles</span>
+            {sectionTitle.split(' ').map((word, i) => 
+              i === sectionTitle.split(' ').length - 1 
+                ? <span key={i} className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">{word}</span>
+                : <span key={i}>{word} </span>
+            )}
           </h2>
         </div>
 

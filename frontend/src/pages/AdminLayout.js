@@ -417,7 +417,12 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
     image_url: '',
     prize_images: ['', '', ''],
     symbol_type: 'diamond',
-    lottery_name: 'Lotería de Medellín'
+    lottery_name: 'Lotería de Medellín',
+    // Opciones de visualización
+    show_prizes_section: true,
+    prizes_section_title: 'Premios Increíbles',
+    show_how_it_works: false,
+    how_it_works_title: 'Cómo Funciona'
   });
   const [loading, setLoading] = useState(false);
 
@@ -627,6 +632,46 @@ function CreateEventModal({ open, onClose, templates, onSuccess }) {
             ))}
           </div>
 
+          {/* Opciones de Visualización */}
+          <div className="space-y-4 p-4 bg-slate-800/30 rounded-lg border border-slate-700">
+            <Label className="text-white font-semibold">Opciones de Visualización</Label>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white text-sm">Mostrar sección de Premios</p>
+                <p className="text-white/50 text-xs">La sección "Premios Increíbles"</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={formData.show_prizes_section !== false}
+                onChange={(e) => setFormData({...formData, show_prizes_section: e.target.checked})}
+                className="w-5 h-5 rounded"
+              />
+            </div>
+            
+            {formData.show_prizes_section !== false && (
+              <Input
+                value={formData.prizes_section_title || 'Premios Increíbles'}
+                onChange={(e) => setFormData({...formData, prizes_section_title: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="Título de la sección de premios"
+              />
+            )}
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white text-sm">Mostrar sección "Cómo Funciona"</p>
+                <p className="text-white/50 text-xs">Explicación del sorteo</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={formData.show_how_it_works === true}
+                onChange={(e) => setFormData({...formData, show_how_it_works: e.target.checked})}
+                className="w-5 h-5 rounded"
+              />
+            </div>
+          </div>
+
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={onClose} className="border-slate-700">
               Cancelar
@@ -676,7 +721,13 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
         price_per_number: event.price_per_number || 500,
         total_numbers: event.total_numbers || 1000000,
         symbol_type: event.symbol_type || 'diamond',
-        lottery_name: event.lottery_name || ''
+        lottery_name: event.lottery_name || '',
+        start_date: event.start_date || '',
+        end_date: event.end_date || '',
+        // Opciones de visualización
+        show_prizes_section: event.show_prizes_section !== false,
+        prizes_section_title: event.prizes_section_title || 'Premios Increíbles',
+        show_how_it_works: event.show_how_it_works || false
       });
     }
   }, [event]);
@@ -757,9 +808,10 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
           <TabsList className="bg-slate-800 w-full">
             <TabsTrigger value="general" className="flex-1">General</TabsTrigger>
-            <TabsTrigger value="config" className="flex-1">Configuración</TabsTrigger>
+            <TabsTrigger value="config" className="flex-1">Config</TabsTrigger>
             <TabsTrigger value="prizes" className="flex-1">Premios</TabsTrigger>
             <TabsTrigger value="plans" className="flex-1">Planes</TabsTrigger>
+            <TabsTrigger value="display" className="flex-1">Vista</TabsTrigger>
           </TabsList>
 
           <ScrollArea className="flex-1 mt-4">
@@ -1048,6 +1100,60 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                   </CardContent>
                 </Card>
               ))}
+            </TabsContent>
+
+            <TabsContent value="display" className="space-y-4 m-0">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">Opciones de Visualización</h3>
+                
+                {/* Sección de Premios */}
+                <Card className="bg-slate-800/50 border-slate-700">
+                  <CardContent className="pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white font-medium">Sección de Premios</p>
+                        <p className="text-white/50 text-xs">Muestra los premios con imágenes y valores</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={formData.show_prizes_section !== false}
+                        onChange={(e) => setFormData({...formData, show_prizes_section: e.target.checked})}
+                        className="w-5 h-5 rounded accent-cyan-500"
+                      />
+                    </div>
+                    
+                    {formData.show_prizes_section !== false && (
+                      <div className="space-y-2">
+                        <Label className="text-white/70">Título de la sección</Label>
+                        <Input
+                          value={formData.prizes_section_title || 'Premios Increíbles'}
+                          onChange={(e) => setFormData({...formData, prizes_section_title: e.target.value})}
+                          className="bg-slate-900 border-slate-700"
+                          placeholder="Ej: Premios Increíbles, Lo que puedes ganar..."
+                        />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Sección Cómo Funciona */}
+                <Card className="bg-slate-800/50 border-slate-700">
+                  <CardContent className="pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white font-medium">Sección "Cómo Funciona"</p>
+                        <p className="text-white/50 text-xs">Explicación de las reglas del sorteo</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={formData.show_how_it_works === true}
+                        onChange={(e) => setFormData({...formData, show_how_it_works: e.target.checked})}
+                        className="w-5 h-5 rounded accent-cyan-500"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </ScrollArea>
         </Tabs>
