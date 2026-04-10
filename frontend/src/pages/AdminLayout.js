@@ -1151,6 +1151,29 @@ function EditEventModal({ open, onClose, event, onSuccess }) {
                         className="w-5 h-5 rounded accent-cyan-500"
                       />
                     </div>
+                    
+                    {formData.show_how_it_works && (
+                      <div className="space-y-3 pt-2 border-t border-slate-700">
+                        <div className="space-y-2">
+                          <Label className="text-white/70">Título de la sección</Label>
+                          <Input
+                            value={formData.how_it_works_title || '¿Cómo Funciona?'}
+                            onChange={(e) => setFormData({...formData, how_it_works_title: e.target.value})}
+                            className="bg-slate-900 border-slate-700"
+                            placeholder="Ej: ¿Cómo Funciona?, Reglas del Sorteo..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white/70">Contenido (usa saltos de línea para separar puntos)</Label>
+                          <textarea
+                            value={formData.how_it_works_content || ''}
+                            onChange={(e) => setFormData({...formData, how_it_works_content: e.target.value})}
+                            className="w-full h-40 bg-slate-900 border border-slate-700 rounded-md p-3 text-white text-sm"
+                            placeholder="Escribe las reglas aquí...&#10;Cada línea será un punto separado.&#10;&#10;Ejemplo:&#10;Compra tus diamantes numerados&#10;Participa en los sorteos diarios&#10;El ganador se define con la lotería del día"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
