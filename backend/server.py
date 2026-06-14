@@ -1722,6 +1722,81 @@ async def save_site_settings(request: Request):
         logger.error(f"Error saving settings: {str(e)}")
         raise HTTPException(status_code=500, detail="Error guardando configuración")
 
+# Appearance Settings endpoints
+@api_router.get("/admin/appearance")
+async def get_appearance_settings(request: Request):
+    """Obtener configuración de apariencia del sitio"""
+    await get_current_admin(request)
+    
+    try:
+        appearance = await db.site_appearance.find_one({}, {"_id": 0})
+        if not appearance:
+            # Default values
+            appearance = {
+                "site_name": "Dinámica de Diamantes",
+                "logo_url": "",
+                "favicon_url": "",
+                "primary_color": "#06b6d4",
+                "secondary_color": "#a855f7",
+                "background_color": "#020617",
+                "background_image": "",
+                "footer_email": "soportedinamicadiamantes@gmail.com",
+                "footer_phone": "+57 301 817 7278",
+                "footer_whatsapp": "",
+                "footer_instagram": "",
+                "footer_facebook": "",
+                "footer_tiktok": ""
+            }
+        return {"appearance": appearance}
+    except Exception as e:
+        logger.error(f"Error getting appearance: {str(e)}")
+        return {"appearance": None}
+
+@api_router.post("/admin/appearance")
+async def save_appearance_settings(request: Request):
+    """Guardar configuración de apariencia del sitio"""
+    await get_current_admin(request)
+    
+    try:
+        body = await request.json()
+        
+        await db.site_appearance.update_one(
+            {},
+            {"$set": body},
+            upsert=True
+        )
+        
+        return {"message": "Apariencia guardada exitosamente"}
+    except Exception as e:
+        logger.error(f"Error saving appearance: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error guardando apariencia")
+
+@api_router.get("/appearance")
+async def get_public_appearance():
+    """Obtener configuración de apariencia pública (sin auth)"""
+    try:
+        appearance = await db.site_appearance.find_one({}, {"_id": 0})
+        if not appearance:
+            appearance = {
+                "site_name": "Dinámica de Diamantes",
+                "logo_url": "",
+                "favicon_url": "",
+                "primary_color": "#06b6d4",
+                "secondary_color": "#a855f7",
+                "background_color": "#020617",
+                "background_image": "",
+                "footer_email": "soportedinamicadiamantes@gmail.com",
+                "footer_phone": "+57 301 817 7278",
+                "footer_whatsapp": "",
+                "footer_instagram": "",
+                "footer_facebook": "",
+                "footer_tiktok": ""
+            }
+        return appearance
+    except Exception as e:
+        logger.error(f"Error getting public appearance: {str(e)}")
+        return {}
+
 # Include the router
 app.include_router(api_router)
 

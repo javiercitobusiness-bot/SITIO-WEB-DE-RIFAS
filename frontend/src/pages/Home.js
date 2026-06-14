@@ -29,10 +29,28 @@ export default function Home() {
   const [purchaseResult, setPurchaseResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'detail'
+  const [appearance, setAppearance] = useState({
+    primary_color: '#06b6d4',
+    secondary_color: '#a855f7',
+    background_color: '#020617',
+    background_image: ''
+  });
 
   useEffect(() => {
     fetchData();
+    fetchAppearance();
   }, []);
+
+  const fetchAppearance = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/appearance`);
+      if (res.data) {
+        setAppearance(prev => ({ ...prev, ...res.data }));
+      }
+    } catch (error) {
+      console.log('Using default appearance');
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -147,14 +165,17 @@ export default function Home() {
 
   // Show events list (always, even with 1 event)
   if (viewMode === 'list' && events.length >= 1) {
+    const bgImage = appearance.background_image || 'https://customer-assets.emergentagent.com/job_505a1cf0-f386-4557-82ed-0a2645c1e05e/artifacts/2586drue_image.png';
+    
     return (
       <div 
         className="min-h-screen flex flex-col relative"
         style={{
-          backgroundImage: `url('https://customer-assets.emergentagent.com/job_505a1cf0-f386-4557-82ed-0a2645c1e05e/artifacts/2586drue_image.png')`,
+          backgroundImage: `url('${bgImage}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
+          backgroundAttachment: 'fixed',
+          backgroundColor: appearance.background_color
         }}
       >
         {/* Overlay oscuro para legibilidad */}
@@ -166,12 +187,12 @@ export default function Home() {
           <div className="max-w-5xl mx-auto">
             {/* Hero Section - Optimizado para móvil */}
             <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-4">
-                <Diamond className="w-4 h-4 text-cyan-400" />
-                <span className="text-cyan-400 text-xs font-medium">Dinámica de Diamantes</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-4" style={{ borderColor: `${appearance.primary_color}33` }}>
+                <Diamond className="w-4 h-4" style={{ color: appearance.primary_color }} />
+                <span style={{ color: appearance.primary_color }} className="text-xs font-medium">Dinámica de Diamantes</span>
               </div>
               <h1 className="text-3xl md:text-5xl font-bold text-white mb-3">
-                Eventos <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Disponibles</span>
+                Eventos <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${appearance.primary_color}, ${appearance.secondary_color})` }}>Disponibles</span>
               </h1>
               <p className="text-white/60 text-sm md:text-lg max-w-xl mx-auto px-4">
                 Elige el evento en el que deseas participar

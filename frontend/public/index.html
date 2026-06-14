@@ -9,7 +9,23 @@
         <meta property="og:title" content="Dinámica de Diamantes - Gana $150.000.000" />
         <meta property="og:description" content="Compra tus diamantes numerados y participa por increíbles premios en efectivo." />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>" />
+        <link rel="icon" id="dynamic-favicon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>" />
+        <script>
+            // Dynamic favicon and title from appearance settings
+            (function() {
+                fetch('%REACT_APP_BACKEND_URL%/api/appearance')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.favicon_url) {
+                            document.getElementById('dynamic-favicon').href = data.favicon_url;
+                        }
+                        if (data.site_name) {
+                            document.title = '💎 ' + data.site_name;
+                        }
+                    })
+                    .catch(() => {});
+            })();
+        </script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet" />

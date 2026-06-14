@@ -45,7 +45,8 @@ import {
   Lock,
   Search,
   Star,
-  EyeOff
+  EyeOff,
+  Palette
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -1581,6 +1582,337 @@ function SiteSettingsView() {
   );
 }
 
+// Appearance Settings View
+function AppearanceView() {
+  const [appearance, setAppearance] = useState({
+    site_name: 'Dinámica de Diamantes',
+    logo_url: '',
+    favicon_url: '',
+    primary_color: '#06b6d4',
+    secondary_color: '#a855f7',
+    background_color: '#020617',
+    background_image: '',
+    footer_email: '',
+    footer_phone: '',
+    footer_whatsapp: '',
+    footer_instagram: '',
+    footer_facebook: '',
+    footer_tiktok: ''
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchAppearance();
+  }, []);
+
+  const fetchAppearance = async () => {
+    try {
+      const response = await api.get('/api/admin/appearance');
+      if (response.data.appearance) {
+        setAppearance(prev => ({ ...prev, ...response.data.appearance }));
+      }
+    } catch (error) {
+      console.error('Error fetching appearance:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.post('/api/admin/appearance', appearance);
+      toast.success('Apariencia guardada exitosamente');
+    } catch (error) {
+      toast.error('Error al guardar la apariencia');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <RefreshCw className="w-8 h-8 animate-spin text-cyan-400" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Apariencia del Sitio</h2>
+          <p className="text-white/60">Personaliza colores, logo y textos del sitio</p>
+        </div>
+        <Button 
+          onClick={handleSave} 
+          disabled={saving}
+          className="bg-gradient-to-r from-cyan-500 to-purple-500"
+        >
+          {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+          Guardar Cambios
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Logo y Marca */}
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Image className="w-5 h-5 text-cyan-400" />
+              Logo y Marca
+            </CardTitle>
+            <CardDescription>Configura el nombre y logo del sitio</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-white/70">Nombre del Sitio</Label>
+              <Input
+                value={appearance.site_name}
+                onChange={(e) => setAppearance({...appearance, site_name: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="Dinámica de Diamantes"
+              />
+              <p className="text-xs text-white/40">Aparece en el header y título de la página</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-white/70">URL del Logo</Label>
+              <Input
+                value={appearance.logo_url}
+                onChange={(e) => setAppearance({...appearance, logo_url: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="https://tu-imagen.com/logo.png"
+              />
+              {appearance.logo_url && (
+                <div className="mt-2 p-3 bg-slate-800 rounded-lg">
+                  <p className="text-xs text-white/40 mb-2">Vista previa:</p>
+                  <img src={appearance.logo_url} alt="Logo" className="h-12 object-contain" />
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-white/70">URL del Favicon</Label>
+              <Input
+                value={appearance.favicon_url}
+                onChange={(e) => setAppearance({...appearance, favicon_url: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="https://tu-imagen.com/favicon.ico"
+              />
+              <p className="text-xs text-white/40">Icono que aparece en la pestaña del navegador</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Colores */}
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Palette className="w-5 h-5 text-purple-400" />
+              Colores
+            </CardTitle>
+            <CardDescription>Personaliza los colores principales del sitio</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-white/70">Color Principal</Label>
+              <div className="flex gap-3">
+                <input
+                  type="color"
+                  value={appearance.primary_color}
+                  onChange={(e) => setAppearance({...appearance, primary_color: e.target.value})}
+                  className="w-12 h-10 rounded cursor-pointer"
+                />
+                <Input
+                  value={appearance.primary_color}
+                  onChange={(e) => setAppearance({...appearance, primary_color: e.target.value})}
+                  className="bg-slate-800 border-slate-700 flex-1"
+                  placeholder="#06b6d4"
+                />
+              </div>
+              <p className="text-xs text-white/40">Botones, enlaces y elementos destacados</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-white/70">Color Secundario</Label>
+              <div className="flex gap-3">
+                <input
+                  type="color"
+                  value={appearance.secondary_color}
+                  onChange={(e) => setAppearance({...appearance, secondary_color: e.target.value})}
+                  className="w-12 h-10 rounded cursor-pointer"
+                />
+                <Input
+                  value={appearance.secondary_color}
+                  onChange={(e) => setAppearance({...appearance, secondary_color: e.target.value})}
+                  className="bg-slate-800 border-slate-700 flex-1"
+                  placeholder="#a855f7"
+                />
+              </div>
+              <p className="text-xs text-white/40">Gradientes y acentos</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-white/70">Color de Fondo</Label>
+              <div className="flex gap-3">
+                <input
+                  type="color"
+                  value={appearance.background_color}
+                  onChange={(e) => setAppearance({...appearance, background_color: e.target.value})}
+                  className="w-12 h-10 rounded cursor-pointer"
+                />
+                <Input
+                  value={appearance.background_color}
+                  onChange={(e) => setAppearance({...appearance, background_color: e.target.value})}
+                  className="bg-slate-800 border-slate-700 flex-1"
+                  placeholder="#020617"
+                />
+              </div>
+            </div>
+
+            {/* Preview de colores */}
+            <div className="mt-4 p-4 rounded-lg border border-slate-700" style={{ backgroundColor: appearance.background_color }}>
+              <p className="text-xs text-white/40 mb-2">Vista previa:</p>
+              <div className="flex gap-2">
+                <div 
+                  className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+                  style={{ backgroundColor: appearance.primary_color }}
+                >
+                  Primario
+                </div>
+                <div 
+                  className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+                  style={{ backgroundColor: appearance.secondary_color }}
+                >
+                  Secundario
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Imagen de Fondo */}
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Image className="w-5 h-5 text-green-400" />
+              Imagen de Fondo
+            </CardTitle>
+            <CardDescription>Imagen de fondo de la página principal</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-white/70">URL de la Imagen</Label>
+              <Input
+                value={appearance.background_image}
+                onChange={(e) => setAppearance({...appearance, background_image: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="https://tu-imagen.com/fondo.jpg"
+              />
+            </div>
+            {appearance.background_image && (
+              <div className="mt-2 rounded-lg overflow-hidden border border-slate-700">
+                <img 
+                  src={appearance.background_image} 
+                  alt="Fondo" 
+                  className="w-full h-32 object-cover"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Globe className="w-5 h-5 text-yellow-400" />
+              Información del Footer
+            </CardTitle>
+            <CardDescription>Datos de contacto y redes sociales</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white/70 flex items-center gap-2">
+                  <Mail className="w-4 h-4" /> Email
+                </Label>
+                <Input
+                  value={appearance.footer_email}
+                  onChange={(e) => setAppearance({...appearance, footer_email: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="correo@ejemplo.com"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-white/70 flex items-center gap-2">
+                  <Phone className="w-4 h-4" /> Teléfono
+                </Label>
+                <Input
+                  value={appearance.footer_phone}
+                  onChange={(e) => setAppearance({...appearance, footer_phone: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="+57 300 123 4567"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-white/70">WhatsApp (número con código de país)</Label>
+              <Input
+                value={appearance.footer_whatsapp}
+                onChange={(e) => setAppearance({...appearance, footer_whatsapp: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="573001234567"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white/70 flex items-center gap-2">
+                  <Instagram className="w-4 h-4" /> Instagram
+                </Label>
+                <Input
+                  value={appearance.footer_instagram}
+                  onChange={(e) => setAppearance({...appearance, footer_instagram: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="https://instagram.com/tu-cuenta"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-white/70 flex items-center gap-2">
+                  <Facebook className="w-4 h-4" /> Facebook
+                </Label>
+                <Input
+                  value={appearance.footer_facebook}
+                  onChange={(e) => setAppearance({...appearance, footer_facebook: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="https://facebook.com/tu-pagina"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-white/70">TikTok</Label>
+              <Input
+                value={appearance.footer_tiktok}
+                onChange={(e) => setAppearance({...appearance, footer_tiktok: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="https://tiktok.com/@tu-cuenta"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // Security Settings View - Change Password
 function SecuritySettingsView() {
   const [passwords, setPasswords] = useState({
@@ -2387,6 +2719,7 @@ export default function AdminLayout() {
     { path: '/admin/dashboard/influencers', icon: Star, label: 'Códigos Influencers' },
     { path: '/admin/dashboard/customers', icon: Users, label: 'Clientes' },
     { path: '/admin/dashboard/payments', icon: DollarSign, label: 'Pasarelas' },
+    { path: '/admin/dashboard/appearance', icon: Palette, label: 'Apariencia' },
     { path: '/admin/dashboard/settings', icon: Settings, label: 'Configuración' },
     { path: '/admin/dashboard/security', icon: Lock, label: 'Seguridad' }
   ];
@@ -2477,6 +2810,7 @@ export default function AdminLayout() {
           <Route path="influencers" element={<InfluencerCodesView />} />
           <Route path="customers" element={<CustomersView />} />
           <Route path="payments" element={<PaymentGatewaysView />} />
+          <Route path="appearance" element={<AppearanceView />} />
           <Route path="settings" element={<SiteSettingsView />} />
           <Route path="security" element={<SecuritySettingsView />} />
         </Routes>
